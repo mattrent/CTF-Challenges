@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: registry.gitlab.com/ctf9215737/ctf/deployer
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
   tag: "latest"
 
 imagePullSecrets: []
