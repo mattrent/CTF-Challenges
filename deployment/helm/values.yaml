@@ -1,0 +1,51 @@
+replicaCount: 1
+
+image:
+  repository: registry.gitlab.com/ctf9215737/ctf/deployer
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  host: deployer.local
+
+volumes:
+- name: deployer-pv-storage
+  persistentVolumeClaim:
+    claimName: deployer-pvclaim
+
+volumeMounts:
+- name: deployer-pv-storage
+  mountPath: "/uploads"
+  readOnly: false
+
+env:
+  DBHOST: "deployer-postgresql.default.svc.cluster.local"
+  DBPORT: 5432
+  DBUSER: postgres
+  DBNAME: postgres
+  UPLOADPATH: "/uploads"
+  VMMEMORY: "1024M"
+  CHALLENGELIFETIMEMINUTES: 120
+  BACKENDURL: "https://deployer"
+  CHALLENGEDOMAIN: ".ctf.lan"
+  VMIMAGEURL: "registry.gitlab.com/ctf9215737/ctf/vm"
+  GIN_MODE: "release"
