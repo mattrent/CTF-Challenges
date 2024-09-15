@@ -2,7 +2,7 @@ image: golang:latest
 
 variables:
   IMAGE_NAME: $CI_REGISTRY_IMAGE/deployer
-  IMAGE_TAG: "1.0"
+  IMAGE_TAG: "latest"
 
 stages:
   - build
