@@ -24,9 +24,6 @@ service:
   type: ClusterIP
   port: 8080
 
-ingress:
-  host: deployer.local
-
 volumes:
 - name: deployer-pv-storage
   persistentVolumeClaim:
@@ -37,6 +34,9 @@ volumeMounts:
   mountPath: "/uploads"
   readOnly: false
 
+ingress:
+  host: deployer.example.com
+
 env:
   DBHOST: "deployer-postgresql.default.svc.cluster.local"
   DBPORT: 5432
@@ -45,7 +45,7 @@ env:
   UPLOADPATH: "/uploads"
   VMMEMORY: "1024M"
   CHALLENGELIFETIMEMINUTES: 120
-  BACKENDURL: "https://deployer"
-  CHALLENGEDOMAIN: ".ctf.lan"
+  BACKENDURL: "https://deployer.example.com"
+  CHALLENGEDOMAIN: ".example.com"
   VMIMAGEURL: "registry.gitlab.com/ctf9215737/ctf/vm"
   GIN_MODE: "release"

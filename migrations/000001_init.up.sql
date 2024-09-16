@@ -22,11 +22,3 @@ CREATE TABLE IF NOT EXISTS instances (
    token varchar(255) NOT NULL,
    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
-
-CREATE TABLE IF NOT EXISTS tests (
-   id uuid default uuid_generate_v4() PRIMARY KEY,
-   challenge_id uuid NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
-   status_code int NOT NULL,
-   log varchar NOT NULL,
-   created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
-);
