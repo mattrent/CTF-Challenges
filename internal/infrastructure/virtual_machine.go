@@ -15,10 +15,10 @@ func ptr[V any](v V) *V {
 	return &v
 }
 
-func BuildVm(challengeId, token string, namespace string) *kubevirt.VirtualMachine {
+func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.VirtualMachine {
 	containerDiskName := "containerdisk"
 	cloudInitDiskName := "cloudinitdisk"
-	userData := buildCloudInit(challengeId, token)
+	userData := buildCloudInit(challengeId, token, challengeUrl)
 
 	return &kubevirt.VirtualMachine{
 		TypeMeta: metav1.TypeMeta{
@@ -115,15 +115,13 @@ func BuildVm(challengeId, token string, namespace string) *kubevirt.VirtualMachi
 	}
 }
 
-func buildCloudInit(challengeId, token string) string {
+func buildCloudInit(challengeId, token, challengeUrl string) string {
 	userData := fmt.Sprintf(`#cloud-config
-password: ubuntu
-chpasswd: { expire: False }
 runcmd:
 - apt-get install -y zip
 - [wget, --no-check-certificate, -O, "/tmp/challenge.zip", "%s/challenges/%s/download?token=%s"]
 - unzip -d /tmp/challenge/ /tmp/challenge.zip
-- docker compose -f /tmp/challenge/docker-compose.yml up -d
-`, config.Values.BackendUrl, challengeId, token)
+- DOMAIN="%s" docker compose -f /tmp/challenge/docker-compose.yml up -d
+`, config.Values.BackendUrl, challengeId, token, challengeUrl)
 	return userData
 }
