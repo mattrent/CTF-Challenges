@@ -62,7 +62,7 @@ func createResources(userId, challengeId, instanceId, token string) (*StartChall
 	ns := infrastructure.BuildNamespace(name)
 	resources := []client.Object{
 		ns,
-		infrastructure.BuildVm(challengeId, token, ns.Name),
+		infrastructure.BuildVm(challengeId, token, ns.Name, challengeUrl),
 		infrastructure.BuildHttpService(ns.Name),
 		infrastructure.BuildHttpsService(ns.Name),
 		infrastructure.BuildHttpsIngressRoute(ns.Name, challengeUrl),
