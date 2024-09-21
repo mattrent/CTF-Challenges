@@ -3,7 +3,6 @@ package handlers
 import (
 	"deployer/config"
 	"deployer/internal/storage"
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -51,6 +50,6 @@ func AddChallenge(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusOK, gin.H{
-		"message": fmt.Sprintf("Challenge %s added", challengeId),
+		"challengeid": challengeId,
 	})
 }

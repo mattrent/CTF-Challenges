@@ -13,7 +13,7 @@ import (
 )
 
 type StartChallengeResponse struct {
-	Url string
+	Url string `json:"url"`
 }
 
 func StartChallenge(c *gin.Context) {
