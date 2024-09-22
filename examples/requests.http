@@ -25,6 +25,9 @@ Content-Disposition: form-data; name="upload[]"; filename="challenge.zip"
 < ./challenge-web/challenge.zip
 --boundary--
 
+### Health
+GET /health
+
 ### Download challenge
 GET /challenges/bfd06649-3826-4bea-9aca-30433fe7c554/download?token=xakDt8jS01FpaMn1VA4Ay2k8MXSRJQ6VN7A4QvQr6sw=
 
@@ -34,6 +37,14 @@ Authorization: Bearer {{auth_token}}
 
 ### Stop challenge
 POST /challenges/5396a88d-0af2-4caf-bfb7-5be216bd1eb7/stop
+Authorization: Bearer {{auth_token}}
+
+### List challenges
+GET /challenges
+Authorization: Bearer {{auth_token}}
+
+### Delete challenge
+DELETE /challenges/ee2b6722-ec7a-45f1-a17d-3bac0ebb8d49
 Authorization: Bearer {{auth_token}}
 
 ### Challenge status

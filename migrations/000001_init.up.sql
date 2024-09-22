@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS challenges (
 CREATE TABLE IF NOT EXISTS instances (
    id uuid default uuid_generate_v4() PRIMARY KEY,
    challenge_id uuid NOT NULL REFERENCES challenges(id) ON DELETE CASCADE,
-   user_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+   player_id varchar(255) NOT NULL,
    token varchar(255) NOT NULL,
    created_at timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 );

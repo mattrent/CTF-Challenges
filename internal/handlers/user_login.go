@@ -3,9 +3,10 @@ package handlers
 import (
 	"deployer/internal/auth"
 	"deployer/internal/storage"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
-	"net/http"
 )
 
 type LoginRequest struct {

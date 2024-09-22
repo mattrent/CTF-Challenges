@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
+	"deployer/config"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -35,9 +37,18 @@ func GetChallengeStatus(c *gin.Context) {
 		return
 	}
 
+	ns, err := clientset.CoreV1().Namespaces().Get(context.Background(), namespace, metav1.GetOptions{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	for _, status := range pods.Items[0].Status.ContainerStatuses {
 		if status.Name == "compute" {
-			c.JSON(http.StatusOK, gin.H{"ready": status.Ready})
+			c.JSON(http.StatusOK, gin.H{
+				"ready":       status.Ready,
+				"secondsleft": int(((time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)) - time.Since(ns.CreationTimestamp.Time)).Seconds()),
+			})
 			return
 		}
 	}

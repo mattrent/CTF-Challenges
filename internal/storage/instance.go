@@ -11,7 +11,7 @@ import (
 type Instance struct {
 	Id          string
 	ChallengeId string
-	UserId      string
+	PlayerId    string
 	Token       string
 	CreatedAt   time.Time
 }
@@ -36,7 +36,7 @@ func CreateInstance(userId, challengeId string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	err = db.QueryRow("INSERT INTO instances (challenge_id, user_id, token) VALUES ($1, $2, $3) RETURNING id", challengeId, userId, token).Scan(&lastInsertId)
+	err = db.QueryRow("INSERT INTO instances (challenge_id, player_id, token) VALUES ($1, $2, $3) RETURNING id", challengeId, userId, token).Scan(&lastInsertId)
 	if err != nil {
 		return "", "", err
 	}
@@ -52,7 +52,7 @@ func GetInstance(challengeId, token string) (Instance, error) {
 		return result, err
 	}
 
-	err = db.QueryRow("SELECT id, challenge_id, user_id, token, created_at FROM instances WHERE challenge_id = $1 AND token = $2", challengeId, token).
-		Scan(&result.Id, &result.ChallengeId, &result.UserId, &result.Token, &result.CreatedAt)
+	err = db.QueryRow("SELECT id, challenge_id, player_id, token, created_at FROM instances WHERE challenge_id = $1 AND token = $2", challengeId, token).
+		Scan(&result.Id, &result.ChallengeId, &result.PlayerId, &result.Token, &result.CreatedAt)
 	return result, err
 }

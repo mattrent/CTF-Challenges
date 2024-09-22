@@ -27,6 +27,34 @@ func GetChallenge(challengeId string) (Challenge, error) {
 	return result, nil
 }
 
+func ListChallenges() ([]Challenge, error) {
+	var result []Challenge
+
+	db, err := sql.Open("postgres", config.Values.DbConn)
+	if err != nil {
+		return result, err
+	}
+
+	rows, err := db.Query("SELECT id, user_id, published FROM challenges;")
+	if err != nil {
+		return result, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var challenge Challenge
+		err := rows.Scan(&challenge.Id, &challenge.UserId, &challenge.Published)
+		if err != nil {
+			return result, err
+		}
+		result = append(result, challenge)
+	}
+	if err := rows.Err(); err != nil {
+		return result, err
+	}
+	return result, nil
+}
+
 func CreateChallenge(userId string) (string, error) {
 	db, err := sql.Open("postgres", config.Values.DbConn)
 	if err != nil {
@@ -47,6 +75,18 @@ func PublishChallenge(challengeId string) error {
 		return err
 	}
 	_, err = db.Exec("UPDATE challenges SET published=$1 WHERE id=$2", true, challengeId)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteChallenge(challengeId string) error {
+	db, err := sql.Open("postgres", config.Values.DbConn)
+	if err != nil {
+		return err
+	}
+	_, err = db.Exec("DELETE FROM challenges WHERE id=$1", challengeId)
 	if err != nil {
 		return err
 	}

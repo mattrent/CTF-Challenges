@@ -6,7 +6,7 @@ import (
 )
 
 func GetNamespaceName(userId, challengeId string) string {
-	return "challenge-" + challengeId[0:13] + "-" + userId[0:13]
+	return "challenge-" + challengeId[0:13] + "-" + userId
 }
 
 func BuildNamespace(name string) *corev1.Namespace {

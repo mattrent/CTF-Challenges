@@ -23,6 +23,7 @@ func main() {
 	go infrastructure.StartCleaner()
 
 	router := gin.Default()
+	router.Use(ErrorHandler)
 
 	router.GET("/health", func(c *gin.Context) {
 		c.String(http.StatusOK, "Healthy")
@@ -30,7 +31,13 @@ func main() {
 
 	router.POST("/users/login", handlers.Login)
 
+	router.GET("/challenges", auth.RequireAdmin, handlers.ListChallenges)
+
 	router.POST("/challenges", auth.RequireDeveloper, handlers.AddChallenge)
+
+	router.PUT("/challenges/:id", auth.RequireDeveloper, handlers.UpdateChallenge)
+
+	router.DELETE("/challenges/:id", auth.RequireAuth, handlers.DeleteChallenge)
 
 	router.POST("/challenges/:id/start", auth.RequireAuth, handlers.StartChallenge)
 
@@ -51,5 +58,17 @@ func main() {
 	err = router.Run("0.0.0.0:8080")
 	if err != nil {
 		log.Fatal(err.Error())
+	}
+}
+
+func ErrorHandler(c *gin.Context) {
+	c.Next()
+
+	for _, err := range c.Errors {
+		log.Println(err.Error())
+	}
+
+	if len(c.Errors) > 0 {
+		c.AbortWithStatus(http.StatusInternalServerError)
 	}
 }
