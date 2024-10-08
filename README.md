@@ -1,7 +1,7 @@
 
 # CTF Challenge Deployer
 
-## Prerequesites
+## Prerequisites
 
 - Kubernetes cluster with KubeVirt and Traefik installed.
 - Helm client installed.

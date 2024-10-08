@@ -110,7 +110,7 @@ def load(app):
 
 
     @app.route("/containers/<challenge_id>/start", methods=["POST"])
-    # @authed_only
+    @authed_only
     def challenge_start(challenge_id):
         token = create_token()
         headers = {"Authorization": f"Bearer {token}"}
