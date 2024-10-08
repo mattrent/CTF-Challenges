@@ -7,13 +7,16 @@ import (
 	"deployer/internal/storage"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type StartChallengeResponse struct {
-	Url string `json:"url"`
+	Url         string `json:"url"`
+	SecondsLeft int    `json:"secondslseft"`
+	Started     bool   `json:"started"`
 }
 
 func StartChallenge(c *gin.Context) {
@@ -46,8 +49,12 @@ func StartChallenge(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
+func getChallengeUrl(instanceId string) string {
+	return "https://" + instanceId + config.Values.ChallengeDomain
+}
+
 func createResources(userId, challengeId, instanceId, token string) (*StartChallengeResponse, error) {
-	challengeUrl := instanceId + config.Values.ChallengeDomain
+	challengeUrl := getChallengeUrl(instanceId)
 
 	kubeClient, err := infrastructure.CreateClient()
 	if err != nil {
@@ -80,6 +87,8 @@ func createResources(userId, challengeId, instanceId, token string) (*StartChall
 
 	log.Println("Started: " + challengeUrl)
 	return &StartChallengeResponse{
-		Url: challengeUrl,
+		Url:         challengeUrl,
+		SecondsLeft: int((time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)).Seconds()),
+		Started:     true,
 	}, nil
 }

@@ -56,3 +56,16 @@ func GetInstance(challengeId, token string) (Instance, error) {
 		Scan(&result.Id, &result.ChallengeId, &result.PlayerId, &result.Token, &result.CreatedAt)
 	return result, err
 }
+
+func GetInstanceByPlayer(challengeId, playerId string) (Instance, error) {
+	var result Instance
+
+	db, err := sql.Open("postgres", config.Values.DbConn)
+	if err != nil {
+		return result, err
+	}
+
+	err = db.QueryRow("SELECT id, challenge_id, player_id, token, created_at FROM instances WHERE challenge_id = $1 AND player_id = $2", challengeId, playerId).
+		Scan(&result.Id, &result.ChallengeId, &result.PlayerId, &result.Token, &result.CreatedAt)
+	return result, err
+}
