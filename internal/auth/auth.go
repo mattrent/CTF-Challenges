@@ -4,6 +4,7 @@ import (
 	"deployer/config"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"slices"
 	"strings"
@@ -73,32 +74,39 @@ func RequireRole(c *gin.Context, allowedRoles []string) {
 
 	if err != nil {
 		if errors.Is(err, jwt.ErrSignatureInvalid) {
+			log.Println("Signature error")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
+		log.Println("Signature error")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 	if !token.Valid {
+		log.Println("Token invalid")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	exp, err := token.Claims.GetExpirationTime()
 	if err != nil {
+		log.Println("Token exp error")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 	if exp.Before(time.Now()) {
+		log.Println("Token expired")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	if len(allowedRoles) != 0 && !slices.Contains(allowedRoles, claims.Role) {
+		log.Println("Missing role")
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
 	c.Set("userid", claims.UserId)
+	log.Println("Setting context for userid for: " + claims.UserId)
 	c.Next()
 }

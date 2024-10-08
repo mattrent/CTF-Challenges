@@ -36,7 +36,7 @@ func AddChallenge(c *gin.Context) {
 	}
 
 	for _, file := range files {
-		allowedFilenames := []string{"challenge.yml", "challenge.zip"}
+		allowedFilenames := []string{"challenge.yml", "challenge.zip", "handout.zip"}
 		if !slices.Contains(allowedFilenames, file.Filename) {
 			c.JSON(http.StatusBadRequest, "invalid filename")
 			return

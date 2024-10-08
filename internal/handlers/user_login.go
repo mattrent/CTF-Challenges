@@ -3,6 +3,7 @@ package handlers
 import (
 	"deployer/internal/auth"
 	"deployer/internal/storage"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -29,6 +30,7 @@ func Login(c *gin.Context) {
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(request.Password))
 	if err != nil {
+		log.Println("Wrong password")
 		c.JSON(http.StatusUnauthorized, gin.H{})
 		return
 	}
