@@ -31,7 +31,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 			Labels:    map[string]string{},
 		},
 		Spec: kubevirt.VirtualMachineSpec{
-			Running: ptr(true),
+			RunStrategy: ptr(kubevirt.RunStrategyRerunOnFailure),
 			Template: &kubevirt.VirtualMachineInstanceTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{},

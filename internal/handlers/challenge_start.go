@@ -50,7 +50,7 @@ func StartChallenge(c *gin.Context) {
 }
 
 func getChallengeUrl(instanceId string) string {
-	return "https://" + instanceId + config.Values.ChallengeDomain
+	return instanceId + config.Values.ChallengeDomain
 }
 
 func createResources(userId, challengeId, instanceId, token string) (*StartChallengeResponse, error) {
