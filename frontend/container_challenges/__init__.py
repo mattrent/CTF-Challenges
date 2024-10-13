@@ -86,8 +86,8 @@ def load(app):
         app, base_path="/plugins/container_challenges/assets/"
     )
 
-    backend_url = os.getenv("BACKENDURL", "http://deployer.default.svc.cluster.local:8080/")
-    jwt_secret = os.environ["jwtsecret"]
+    backend_url = os.environ["BACKENDURL"]
+    jwt_secret = os.environ["JWTSECRET"]
 
     def create_token():
         return jwt.encode({
