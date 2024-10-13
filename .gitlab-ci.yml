@@ -16,8 +16,8 @@ build:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build -t $BACKEND_IMAGE_NAME:$IMAGE_TAG -f backend/Dockerfile
+    - docker build -t $BACKEND_IMAGE_NAME:$IMAGE_TAG -f backend/Dockerfile .
     - docker push $BACKEND_IMAGE_NAME:$IMAGE_TAG
-    - docker build -t $FRONTEND_IMAGE_NAME:$IMAGE_TAG -f frontend/Dockerfile
+    - docker build -t $FRONTEND_IMAGE_NAME:$IMAGE_TAG -f frontend/Dockerfile .
     - docker push $FRONTEND_IMAGE_NAME:$IMAGE_TAG
 
