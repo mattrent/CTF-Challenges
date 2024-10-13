@@ -1,0 +1,11 @@
+name: web
+author: author
+category: category
+description: A Website
+value: 100
+type: standard
+
+solution: Solution description
+
+flags:
+    - flag{3xampl3}

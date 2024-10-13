@@ -1,7 +1,8 @@
 image: golang:latest
 
 variables:
-  IMAGE_NAME: $CI_REGISTRY_IMAGE/deployer
+  BACKEND_IMAGE_NAME: $CI_REGISTRY_IMAGE/deployer
+  FRONTEND_IMAGE_NAME: $CI_REGISTRY_IMAGE/frontend
   IMAGE_TAG: "latest"
 
 stages:
@@ -15,5 +16,8 @@ build:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
-    - docker build -t $IMAGE_NAME:$IMAGE_TAG .
-    - docker push $IMAGE_NAME:$IMAGE_TAG
+    - docker build -t $BACKEND_IMAGE_NAME:$IMAGE_TAG -f backend/Dockerfile
+    - docker push $BACKEND_IMAGE_NAME:$IMAGE_TAG
+    - docker build -t $FRONTEND_IMAGE_NAME:$IMAGE_TAG -f frontend/Dockerfile
+    - docker push $FRONTEND_IMAGE_NAME:$IMAGE_TAG
+

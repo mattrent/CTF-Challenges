@@ -1,5 +1,0 @@
-services:
-  web1.ctf:
-    build: ./web1
-    ports:
-      - "80:80"

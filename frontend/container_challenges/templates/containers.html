@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+
+{% block stylesheets %}
+{% endblock %}
+
+{% block content %}
+	<div class="jumbotron">
+		<div class="container">
+			<h1>
+				Container config
+			</h1>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="row">
+			<div class="col-md-6 offset-md-3">
+				<form id="containers-config-form" method="POST">
+					<div class="form-group">
+						<label for="ca-file">
+                            Value
+                        </label>
+                        <input class="form-control" type="text" name="value" id="value" />
+					</div>
+					
+                    <div class="col-md-13 text-center">
+                        <button type="submit" tabindex="0" class="btn btn-md btn-primary btn-outlined">
+                            Submit
+                        </button>
+                    </div>
+                    <input name='nonce' type='hidden' value="{{ nonce }}">
+				</form>
+			</div>
+		</div>
+	</div>
+{% endblock %}
+
+{% block scripts %}
+{% endblock %}
+
+{% block entrypoint %}
+{% endblock %}
