@@ -106,7 +106,7 @@ def load(app):
         print("request", url)
         response = requests.get(url, json={}, headers=headers, verify=False)
         print(response)
-        return response.json()
+        return response.json(), response.status_code
 
 
     @app.route("/containers/<challenge_id>/start", methods=["POST"])
@@ -118,7 +118,7 @@ def load(app):
         print("request", url)
         response = requests.post(url, json={}, headers=headers, verify=False)
         print(response)
-        return response.json()
+        return response.json(), response.status_code
 
 
     @app.route("/containers/<challenge_id>/stop", methods=["POST"])
@@ -130,4 +130,4 @@ def load(app):
         print("request", url)
         response = requests.post(url, json={}, headers=headers, verify=False)
         print(response)
-        return response.json()
+        return response.json(), response.status_code

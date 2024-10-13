@@ -37,9 +37,13 @@ CTFd._internal.challenge.submit = function(preview) {
 CTFd.plugin.run((_CTFd) => {
   const $ = _CTFd.lib.$
 
-  $(document).ready(function(){
+  $(document).ready(function() {
 
     let challenge = $("#challenge-actions").data("challengeIdentifier");
+
+    $(".start-challenge").hide();
+    $(".stop-challenge").hide();
+
     CTFd.fetch("/containers/" + challenge + "/status", {
       method: "GET",
       headers: {"Content-Type": "application/json"}
@@ -49,14 +53,14 @@ CTFd.plugin.run((_CTFd) => {
         console.log(obj.body);
         if (obj.body.started) {
           $(".start-challenge").hide();
-          var a = document.createElement("a");
-          a.setAttribute("href", obj.body.url);
-          a.innerText = obj.body.url;
-          document.getElementById("challenge-result").appendChild(a);
+          $(".stop-challenge").show();
+          document.getElementById("challenge-result").textContent = obj.body.url;
         } else {
+          $(".start-challenge").show();
           $(".stop-challenge").hide();
         }
-      });
+      })
+      .catch((error) => console.error(error));
 
 
     $(".start-challenge").on("click" , function() {
@@ -69,17 +73,16 @@ CTFd.plugin.run((_CTFd) => {
         .then(r =>  r.json().then(data => ({status: r.status, body: data})))
         .then(obj => {
           console.log(obj.body);
-          var a = document.createElement("a");
-          a.setAttribute("href", obj.body.url);
-          a.innerText = obj.body.url;
-          document.getElementById("challenge-result").appendChild(a);
+          document.getElementById("challenge-result").textContent = obj.body.url;
           $(".stop-challenge").show();
           $(".start-challenge").hide();
-        });
+        })
+        .catch((error) => console.error(error));
     });
 
     $(".stop-challenge").on("click", function() {
       let challenge = $("#challenge-actions").data("challengeIdentifier");
+
       CTFd.fetch("/containers/" + challenge + "/stop", {
         method: "POST",
         headers: {"Content-Type": "application/json"}, 
@@ -90,7 +93,8 @@ CTFd.plugin.run((_CTFd) => {
           document.getElementById("challenge-result").textContent = obj.body.message;
           $(".stop-challenge").hide();
           $(".start-challenge").show();
-        });
+        })
+        .catch((error) => console.error(error));
     });
   });
 });

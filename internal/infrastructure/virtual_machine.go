@@ -39,6 +39,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 				Spec: kubevirt.VirtualMachineInstanceSpec{
 					Domain: kubevirt.DomainSpec{
 						Devices: kubevirt.Devices{
+							AutoattachGraphicsDevice: ptr(false),
 							Disks: []kubevirt.Disk{
 								{
 									Name: containerDiskName,
@@ -68,8 +69,11 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 						},
 						Resources: kubevirt.ResourceRequirements{
 							Requests: corev1.ResourceList{
-								"memory": resource.MustParse(config.Values.VMMemory),
+								"memory": resource.MustParse("512M"),
 							},
+						},
+						Memory: &kubevirt.Memory{
+							Guest: ptr(resource.MustParse(config.Values.VMMemory)),
 						},
 					},
 					Volumes: []kubevirt.Volume{
