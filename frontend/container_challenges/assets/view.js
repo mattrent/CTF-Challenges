@@ -73,9 +73,13 @@ CTFd.plugin.run((_CTFd) => {
         .then(r =>  r.json().then(data => ({status: r.status, body: data})))
         .then(obj => {
           console.log(obj.body);
-          document.getElementById("challenge-result").textContent = obj.body.url;
-          $(".stop-challenge").show();
-          $(".start-challenge").hide();
+          if (obj.status === 200) {
+            document.getElementById("challenge-result").textContent = obj.body.url;
+            $(".stop-challenge").show();
+            $(".start-challenge").hide();
+          } else {
+            document.getElementById("challenge-result").textContent = obj.body.message;
+          }
         })
         .catch((error) => console.error(error));
     });
@@ -90,9 +94,14 @@ CTFd.plugin.run((_CTFd) => {
         .then(r =>  r.json().then(data => ({status: r.status, body: data})))
         .then(obj => {
           console.log(obj.body);
-          document.getElementById("challenge-result").textContent = obj.body.message;
-          $(".stop-challenge").hide();
-          $(".start-challenge").show();
+
+          if (obj.status === 200) {
+            document.getElementById("challenge-result").textContent = obj.body.message;
+            $(".stop-challenge").hide();
+            $(".start-challenge").show();
+          } else {
+            document.getElementById("challenge-result").textContent = obj.body.message;
+          }
         })
         .catch((error) => console.error(error));
     });

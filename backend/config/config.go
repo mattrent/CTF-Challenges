@@ -25,6 +25,8 @@ type Config struct {
 	ChallengeDomain          string
 	VMImageUrl               string
 	AdminPassword            string
+	CTFDURL                  string
+	CTFDAPIToken             string
 }
 
 func initConfig() Config {

@@ -48,4 +48,6 @@ env:
   BACKENDURL: "https://deployer.example.com"
   CHALLENGEDOMAIN: ".example.com"
   VMIMAGEURL: "registry.gitlab.com/ctf9215737/ctf/vm"
+  CTFDURL: "http://ctfd.example.com"
+  CTFDAPITOKEN: "ctfd_..."
   GIN_MODE: "release"

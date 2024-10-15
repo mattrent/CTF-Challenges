@@ -1,30 +1,64 @@
 {% extends "admin/challenges/create.html" %}
 
-{% block header %}
-<div class="alert alert-secondary" role="alert">
-	Container challenge
-</div>
-{% endblock %}
 
-{% block name %}
-	<div class="form-group">
-		<label>
-			Name:<br>
-			<small class="form-text text-muted">
-				The name of your challenge
-			</small>
-		</label>
-		<input type="text" class="form-control" name="name" placeholder="Enter challenge name">
-	</div>
-	<div class="form-group">
-		<label>
-			Identifier:<br>
-			<small class="form-text text-muted">
-				The identifer used by the backend
-			</small>
-		</label>
-		<input type="text" class="form-control" name="identifier" placeholder="Enter challenge identifier">
-	</div>
+{% block value %}
+<div class="form-group">
+	<label>
+		Identifier:<br>
+		<small class="form-text text-muted">
+			The identifer used by the backend
+		</small>
+	</label>
+	<input type="text" class="form-control" name="identifier" placeholder="Enter challenge identifier">
+</div>
+
+<div class="form-group">
+	<label for="value">Initial Value<br>
+		<small class="form-text text-muted">
+			This is how many points the challenge is worth initially.
+		</small>
+	</label>
+	<input type="number" class="form-control" name="initial" placeholder="Enter value" required>
+</div>
+
+<div class="form-group">
+	<label for="value">Decay Function<br>
+		<small class="form-text text-muted">
+			<span>How the dynamic value will be calculated based on the Decay value</span>
+			<ul>
+				<li>Linear: Calculated as <code>Initial - (Decay * SolveCount)</code></li>
+				<li>Logarithmic: Calculated as <code>(((Minimum - Initial) / (Decay^2)) * (SolveCount^2)) + Initial</code></li>
+			</ul>
+		</small>
+	</label>
+	<select name="function" class="custom-select">
+		<option value="linear">Linear</option>
+		<option value="logarithmic">Logarithmic</option>
+	</select>
+</div>
+
+<div class="form-group">
+	<label for="value">Decay<br>
+		<small class="form-text text-muted">
+			<span>The decay value is used differently depending on the above Decay Function</span>
+			<ul>
+				<li>Linear: The amount of points deducted per solve. Equal deduction per solve.</li>
+				<li>Logarithmic: The amount of solves before the challenge reaches its minimum value. Earlier solves will lose less
+					points. Later solves will lose more points</li>
+			</ul>
+		</small>
+	</label>
+	<input type="number" class="form-control" name="decay" min="0" placeholder="Enter Decay value" required>
+</div>
+
+<div class="form-group">
+	<label for="value">Minimum Value<br>
+		<small class="form-text text-muted">
+			This is the lowest that the challenge can be worth
+		</small>
+	</label>
+	<input type="number" class="form-control" name="minimum" placeholder="Enter minimum value" required>
+</div>
 {% endblock %}
 
 {% block type %}
