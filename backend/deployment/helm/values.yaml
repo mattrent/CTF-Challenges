@@ -34,8 +34,17 @@ volumeMounts:
   mountPath: "/uploads"
   readOnly: false
 
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+readinessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+
 ingress:
-  host: deployer.example.com
+  host: deployer.local.lan
 
 env:
   DBHOST: "deployer-postgresql.ctf.svc.cluster.local"
@@ -45,9 +54,9 @@ env:
   UPLOADPATH: "/uploads"
   VMMEMORY: "2048M"
   CHALLENGELIFETIMEMINUTES: 120
-  BACKENDURL: "https://deployer.example.com"
-  CHALLENGEDOMAIN: ".example.com"
+  BACKENDURL: "https://deployer.local.lan"
+  CHALLENGEDOMAIN: ".local.lan"
   VMIMAGEURL: "registry.gitlab.com/ctf9215737/ctf/vm"
-  CTFDURL: "https://ctfd.example.com"
+  CTFDURL: "https://ctfd.local.lan"
   CTFDAPITOKEN: "ctfd_..."
   GIN_MODE: "release"
