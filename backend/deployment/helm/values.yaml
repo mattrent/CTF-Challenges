@@ -38,12 +38,12 @@ ingress:
   host: deployer.example.com
 
 env:
-  DBHOST: "deployer-postgresql.default.svc.cluster.local"
+  DBHOST: "deployer-postgresql.ctf.svc.cluster.local"
   DBPORT: 5432
   DBUSER: postgres
   DBNAME: postgres
   UPLOADPATH: "/uploads"
-  VMMEMORY: "1024M"
+  VMMEMORY: "2048M"
   CHALLENGELIFETIMEMINUTES: 120
   BACKENDURL: "https://deployer.example.com"
   CHALLENGEDOMAIN: ".example.com"
