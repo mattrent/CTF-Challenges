@@ -8,10 +8,12 @@ kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/${RELEAS
 kubectl apply -f https://github.com/kubevirt/kubevirt/releases/download/${RELEASE}/kubevirt-cr.yaml
 
 # Install virtctl
-export VERSION=$(curl https://storage.googleapis.com/kubevirt-prow/release/kubevirt/kubevirt/stable.txt)
-wget https://github.com/kubevirt/kubevirt/releases/download/${VERSION}/virtctl-${VERSION}-linux-amd64
-sudo mv ./virtctl-${VERSION}-linux-amd64 /usr/local/bin/virtctl
-sudo chmod +x /usr/local/bin/virtctl
+if [[ $1 == "virtctl" ]]; then  
+    export VERSION=$(curl https://storage.googleapis.com/kubevirt-prow/release/kubevirt/kubevirt/stable.txt)
+    wget https://github.com/kubevirt/kubevirt/releases/download/${VERSION}/virtctl-${VERSION}-linux-amd64
+    sudo mv ./virtctl-${VERSION}-linux-amd64 /usr/local/bin/virtctl
+    sudo chmod +x /usr/local/bin/virtctl
+fi 
 
 # Install Traefik
 helm repo add traefik https://traefik.github.io/charts
