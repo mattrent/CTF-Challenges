@@ -10,4 +10,7 @@ services:
       - USER_NAME=test
     ports:
       - "443:2222"
+    volumes:
+     - ./flag.txt:/flag.txt
     restart: unless-stopped
+
