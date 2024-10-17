@@ -2,8 +2,13 @@ name: web
 author: author
 category: category
 description: A Website
-value: 100
-type: standard
+type: container
+
+extra:
+    function: linear
+    initial: 500
+    decay: 10
+    minimum: 50
 
 solution: Solution description
 

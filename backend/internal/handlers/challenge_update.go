@@ -35,7 +35,7 @@ func UpdateChallenge(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	err = os.MkdirAll(dst, os.ModePerm)
+	err = os.MkdirAll(dst, 0750)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

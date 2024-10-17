@@ -29,7 +29,7 @@ func AddChallenge(c *gin.Context) {
 	form, _ := c.MultipartForm()
 	files := form.File["upload[]"]
 	dst := filepath.Join(config.Values.UploadPath, challengeId)
-	err = os.MkdirAll(dst, os.ModePerm)
+	err = os.MkdirAll(dst, 0750)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -8,6 +8,8 @@ services:
     depends_on:
       - web1
       - web2
+    restart: unless-stopped
+
   web1:
     image: php:apache
     ports:
@@ -17,6 +19,8 @@ services:
     environment:
       WEB1URL: "http://web1.${DOMAIN}"
       WEB2URL: "http://web2.${DOMAIN}"
+    restart: unless-stopped
+
   web2:
     image: php:apache
     ports:
@@ -26,3 +30,4 @@ services:
     environment:
       WEB1URL: "http://web1.${DOMAIN}"
       WEB2URL: "http://web2.${DOMAIN}"
+    restart: unless-stopped

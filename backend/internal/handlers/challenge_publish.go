@@ -88,7 +88,7 @@ func PublishChallenge(c *gin.Context) {
 	client := ctfd.NewClient(config.Values.CTFDURL, nonce, session, "")
 	client.SetAPIKey(config.Values.CTFDAPIToken)
 
-	dst := filepath.Join(config.Values.UploadPath, challengeId, "challenge.yml")
+	dst := filepath.Join(config.Values.UploadPath, challenge.Id, "challenge.yml")
 	yamlFile, err := os.ReadFile(dst)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -134,7 +134,7 @@ func PublishChallenge(c *gin.Context) {
 	}
 
 	// Upload handout
-	file := filepath.Join(config.Values.UploadPath, challengeId, "handout.zip")
+	file := filepath.Join(config.Values.UploadPath, challenge.Id, "handout.zip")
 	data, err := os.ReadFile(file)
 	if err == nil {
 		_, err = client.PostFiles(&ctfd.PostFilesParams{
