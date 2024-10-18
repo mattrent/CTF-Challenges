@@ -68,11 +68,11 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 						},
 						Resources: kubevirt.ResourceRequirements{
 							Requests: corev1.ResourceList{
-								"memory": resource.MustParse("512M"),
+								"memory": resource.MustParse(config.Values.MinVMMemory),
 							},
 						},
 						Memory: &kubevirt.Memory{
-							Guest: ptr(resource.MustParse(config.Values.VMMemory)),
+							Guest: ptr(resource.MustParse(config.Values.MaxVMMemory)),
 						},
 					},
 					Volumes: []kubevirt.Volume{

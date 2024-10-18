@@ -19,7 +19,8 @@ type Config struct {
 	DbConn                   string
 	JwtSecret                []byte
 	UploadPath               string
-	VMMemory                 string
+	MinVMMemory              string
+	MaxVMMemory              string
 	ChallengeLifetimeMinutes int
 	BackendUrl               string
 	ChallengeDomain          string

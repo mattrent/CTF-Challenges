@@ -53,8 +53,9 @@ env:
   DBNAME: postgres
   # Directory of mounted storage where challenges are uploaded
   UPLOADPATH: "/uploads"
-  # Max allowed memory used by VM
-  VMMEMORY: "2048M"
+  # Min and max allowed memory used by VM
+  MINVMMEMORY: "256M"
+  MAXVMMEMORY: "1024M"
   # Minutes before challenge instances are automatically deleted
   CHALLENGELIFETIMEMINUTES: 120
   # URL from where VM's download challenge files
