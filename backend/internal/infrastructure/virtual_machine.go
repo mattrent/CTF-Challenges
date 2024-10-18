@@ -7,7 +7,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 	kubevirt "kubevirt.io/api/core/v1"
 )
 
@@ -101,18 +100,18 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 							},
 						},
 					},
-					LivenessProbe: &kubevirt.Probe{
-						Handler: kubevirt.Handler{
-							HTTPGet: &corev1.HTTPGetAction{
-								Path: "/",
-								Port: intstr.FromInt(80),
-							},
-						},
-						InitialDelaySeconds: 300,
-						PeriodSeconds:       30,
-						TimeoutSeconds:      10,
-						FailureThreshold:    5,
-					},
+					// LivenessProbe: &kubevirt.Probe{
+					// 	Handler: kubevirt.Handler{
+					// 		HTTPGet: &corev1.HTTPGetAction{
+					// 			Path: "/",
+					// 			Port: intstr.FromInt(80),
+					// 		},
+					// 	},
+					// 	InitialDelaySeconds: 300,
+					// 	PeriodSeconds:       30,
+					// 	TimeoutSeconds:      10,
+					// 	FailureThreshold:    5,
+					// },
 				},
 			},
 		},
@@ -122,10 +121,9 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 func buildCloudInit(challengeId, token, challengeUrl string) string {
 	userData := fmt.Sprintf(`#cloud-config
 runcmd:
-- apt-get install -y zip
 - [wget, --no-check-certificate, -O, "/tmp/challenge.zip", "%s/challenges/%s/download?token=%s"]
 - unzip -d /tmp/challenge/ /tmp/challenge.zip
-- DOMAIN="%s" docker compose -f /tmp/challenge/docker-compose.yml up -d
+- DOMAIN="%s" docker compose -f /tmp/challenge/compose.yaml up -d
 `, config.Values.BackendUrl, challengeId, token, challengeUrl)
 	return userData
 }

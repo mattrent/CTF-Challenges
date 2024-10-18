@@ -51,12 +51,18 @@ env:
   DBPORT: 5432
   DBUSER: postgres
   DBNAME: postgres
+  # Directory of mounted storage where challenges are uploaded
   UPLOADPATH: "/uploads"
+  # Max allowed memory used by VM
   VMMEMORY: "2048M"
+  # Minutes before challenge instances are automatically deleted
   CHALLENGELIFETIMEMINUTES: 120
+  # URL from where VM's download challenge files
   BACKENDURL: "https://deployer.local.lan"
+  # The domain of which subdomains are generated, example: 7651121c-b8d2-43e9-af88-c493d8ad8a75.local.lan
   CHALLENGEDOMAIN: ".local.lan"
-  VMIMAGEURL: "registry.gitlab.com/ctf9215737/ctf/vm"
+  VMIMAGEURL: "registry.gitlab.com/ctf9215737/ctf/alpinevm"
   CTFDURL: "https://ctfd.local.lan"
   CTFDAPITOKEN: "ctfd_..."
   GIN_MODE: "release"
+
