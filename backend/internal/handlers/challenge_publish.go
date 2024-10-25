@@ -1,20 +1,15 @@
 package handlers
 
 import (
-	"bytes"
 	"deployer/config"
 	"deployer/internal/storage"
-	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 
 	ctfd "github.com/ctfer-io/go-ctfd/api"
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
 )
 
@@ -81,6 +76,7 @@ func PublishChallenge(c *gin.Context) {
 	// Publish to CTFd
 	nonce, session, err := ctfd.GetNonceAndSession(config.Values.CTFDURL)
 	if err != nil {
+		log.Println("Could not connect to CTFd: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -107,13 +103,14 @@ func PublishChallenge(c *gin.Context) {
 	if challenge.CtfdId.Valid {
 		err = client.DeleteChallenge(int(challenge.CtfdId.Int64))
 		if err != nil {
+			log.Println("Could not delete from CTFd: " + err.Error())
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
 	}
 
 	// Add challenge
-	ch, err = postChallenges(client, &PostContainerChallengesParams{
+	ch, err = client.PostChallenges(&ctfd.PostChallengesParams{
 		Name:           conf.Name,
 		Category:       conf.Category,
 		Description:    conf.Description,
@@ -126,9 +123,9 @@ func PublishChallenge(c *gin.Context) {
 		Minimum:        &conf.Extra.Minimum,
 		State:          conf.State,
 		Type:           conf.Type,
-		Identifier:     challenge.Id,
 	})
 	if err != nil {
+		log.Println("Could not add challenge to CTFd: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
@@ -171,84 +168,4 @@ func PublishChallenge(c *gin.Context) {
 	log.Println("Challenge status changed to published")
 
 	c.IndentedJSON(http.StatusCreated, gin.H{})
-}
-
-// from library
-func postChallenges(client *ctfd.Client, params *PostContainerChallengesParams) (*ctfd.Challenge, error) {
-	chall := &ctfd.Challenge{}
-	if err := post(client, "/challenges", params, &chall); err != nil {
-		return nil, err
-	}
-	return chall, nil
-}
-
-func post(client *ctfd.Client, edp string, params any, dst any) error {
-	body, err := json.Marshal(params)
-	if err != nil {
-		return err
-	}
-	req, _ := http.NewRequest(http.MethodPost, edp, bytes.NewBuffer(body))
-
-	return call(client, req, dst)
-}
-
-func call(client *ctfd.Client, req *http.Request, dst any) error {
-	// Set API base URL
-	newUrl, err := url.Parse("/api/v1" + req.URL.String())
-	if err != nil {
-		return err
-	}
-	req.URL = newUrl
-
-	// Issue HTTP request
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-
-	// Decode response
-	resp := ctfd.Response{
-		Data: dst,
-	}
-	if err := json.NewDecoder(res.Body).Decode(&resp); err != nil {
-		return errors.Wrapf(err, "CTFd responded with invalid JSON for content")
-	}
-
-	// Handle errors if any
-	if resp.Errors != nil {
-		return fmt.Errorf("CTFd responded with errors: %v", resp.Errors)
-	}
-	if !resp.Success {
-		// This case should not happen, as status code already serves this goal
-		// and errors gives the reasons.
-		if resp.Message != nil {
-			return fmt.Errorf("CTFd responded with no success but no error, got message: %s", *resp.Message)
-		}
-		return errors.New("CTFd responded with no success but no error, and no message")
-	}
-	return nil
-}
-
-type PostContainerChallengesParams struct {
-	Name           string             `json:"name"`
-	Category       string             `json:"category"`
-	Description    string             `json:"description"`
-	ConnectionInfo *string            `json:"connection_info,omitempty"`
-	Value          int                `json:"value"`
-	Function       string             `json:"function"`
-	Initial        *int               `json:"initial,omitempty"`
-	Decay          *int               `json:"decay,omitempty"`
-	Minimum        *int               `json:"minimum,omitempty"`
-	MaxAttempts    *int               `json:"max_attempts,omitempty"`
-	NextID         *int               `json:"next_id,omitempty"`
-	Requirements   *ctfd.Requirements `json:"requirements,omitempty"`
-	State          string             `json:"state"`
-	Type           string             `json:"type"`
-	Identifier     string             `json:"identifier"`
-}
-
-type ChallengeReponse struct {
-	ID         int    `json:"id"`
-	Identifier string `json:"identifier"`
 }

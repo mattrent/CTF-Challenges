@@ -7,6 +7,7 @@ import (
 	"deployer/internal/storage"
 	"log"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -20,28 +21,36 @@ type StartChallengeResponse struct {
 }
 
 func StartChallenge(c *gin.Context) {
-	challengeId := c.Param("id")
 	userId := c.GetString(userIdValue)
+	challengeId := c.Param("id")
 
-	challenge, err := storage.GetChallenge(challengeId)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Challenge not found",
-		})
-		return
+	var challenge storage.Challenge
+	if id, err := strconv.Atoi(challengeId); err == nil {
+		challenge, err = storage.GetChallengeByCtfdId(id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": "CTFd challenge not found"})
+			return
+		}
+	} else {
+		challenge, err = storage.GetChallenge(challengeId)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Challenge not found"})
+			return
+		}
 	}
+
 	if challenge.UserId != userId && !challenge.Published {
 		c.JSON(http.StatusUnauthorized, gin.H{})
 		return
 	}
 
-	instanceId, token, err := storage.CreateInstance(userId, challengeId)
+	instanceId, token, err := storage.CreateInstance(userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	res, err := createResources(c, userId, challengeId, instanceId, token)
+	res, err := createResources(c, userId, challenge.Id, instanceId, token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

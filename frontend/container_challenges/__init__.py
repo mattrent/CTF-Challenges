@@ -20,7 +20,6 @@ class ContainerChallenge(Challenges):
     id = db.Column(
         db.Integer, db.ForeignKey("challenges.id", ondelete="CASCADE"), primary_key=True
     )
-    identifier = db.Column(db.String(32), default="identifier")
     initial = db.Column(db.Integer, default=0)
     minimum = db.Column(db.Integer, default=0)
     decay = db.Column(db.Integer, default=0)
@@ -77,7 +76,6 @@ class ContainerValueChallenge(BaseChallenge):
         data = super().read(challenge)
         data.update(
             {
-                "identifier": challenge.identifier,
                 "initial": challenge.initial,
                 "decay": challenge.decay,
                 "minimum": challenge.minimum,

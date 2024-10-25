@@ -38,9 +38,7 @@ CTFd.plugin.run((_CTFd) => {
   const $ = _CTFd.lib.$
 
   $(document).ready(function() {
-
-    let challenge = $("#challenge-actions").data("challengeIdentifier");
-
+    const challenge = parseInt(CTFd.lib.$("#challenge-id").val());
     $(".start-challenge").hide();
     $(".stop-challenge").hide();
 
@@ -48,9 +46,8 @@ CTFd.plugin.run((_CTFd) => {
       method: "GET",
       headers: {"Content-Type": "application/json"}
     })
-      .then(r =>  r.json().then(data => ({status: r.status, body: data})))
+      .then(response =>  response.json().then(data => ({status: response.status, body: data})))
       .then(obj => {
-        console.log(obj.body);
         if (obj.body.started) {
           $(".start-challenge").hide();
           $(".stop-challenge").show();
@@ -60,19 +57,18 @@ CTFd.plugin.run((_CTFd) => {
           $(".stop-challenge").hide();
         }
       })
-      .catch((error) => console.error(error));
+      .catch(error => console.error(error));
 
 
     $(".start-challenge").on("click" , function() {
-      let challenge = $("#challenge-actions").data("challengeIdentifier");
+      const challenge = parseInt(CTFd.lib.$("#challenge-id").val());
     
       CTFd.fetch("/containers/" + challenge + "/start", {
         method: "POST",
         headers: {"Content-Type": "application/json"}
       })
-        .then(r =>  r.json().then(data => ({status: r.status, body: data})))
+        .then(response =>  response.json().then(data => ({status: response.status, body: data})))
         .then(obj => {
-          console.log(obj.body);
           if (obj.status === 200) {
             document.getElementById("challenge-result").textContent = obj.body.url;
             $(".stop-challenge").show();
@@ -81,20 +77,18 @@ CTFd.plugin.run((_CTFd) => {
             document.getElementById("challenge-result").textContent = obj.body.message;
           }
         })
-        .catch((error) => console.error(error));
+        .catch(error => console.error(error));
     });
 
     $(".stop-challenge").on("click", function() {
-      let challenge = $("#challenge-actions").data("challengeIdentifier");
+      const challenge = parseInt(CTFd.lib.$("#challenge-id").val());
 
       CTFd.fetch("/containers/" + challenge + "/stop", {
         method: "POST",
         headers: {"Content-Type": "application/json"}, 
       })
-        .then(r =>  r.json().then(data => ({status: r.status, body: data})))
+        .then(response =>  response.json().then(data => ({status: response.status, body: data})))
         .then(obj => {
-          console.log(obj.body);
-
           if (obj.status === 200) {
             document.getElementById("challenge-result").textContent = obj.body.message;
             $(".stop-challenge").hide();
@@ -103,7 +97,7 @@ CTFd.plugin.run((_CTFd) => {
             document.getElementById("challenge-result").textContent = obj.body.message;
           }
         })
-        .catch((error) => console.error(error));
+        .catch(error => console.error(error));
     });
   });
 });
