@@ -56,16 +56,15 @@ func RequireDeveloper(c *gin.Context) {
 
 func RequireRole(c *gin.Context, allowedRoles []string) {
 	authHeader := c.GetHeader("Authorization")
-	reqTokenParts := strings.Split(authHeader, "Bearer ")
+	parts := strings.Split(authHeader, "Bearer ")
 
-	if len(reqTokenParts) != 2 {
+	if len(parts) != 2 {
 		c.AbortWithStatus(http.StatusUnauthorized)
 		return
 	}
 
-	reqToken := reqTokenParts[1]
 	claims := &Claims{}
-	token, err := jwt.ParseWithClaims(reqToken, claims, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.ParseWithClaims(parts[1], claims, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("signing method invalid: %v", token.Header["alg"])
 		}

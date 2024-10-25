@@ -21,7 +21,7 @@ func StartCleaner() {
 			return
 		}
 
-		nsList, err := clientset.CoreV1().Namespaces().List(context.Background(), metav1.ListOptions{})
+		nsList, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			log.Println(err.Error())
 			return

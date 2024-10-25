@@ -41,7 +41,7 @@ func StartChallenge(c *gin.Context) {
 		return
 	}
 
-	res, err := createResources(userId, challengeId, instanceId, token)
+	res, err := createResources(c, userId, challengeId, instanceId, token)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -53,16 +53,13 @@ func getChallengeUrl(instanceId string) string {
 	return instanceId + config.Values.ChallengeDomain
 }
 
-func createResources(userId, challengeId, instanceId, token string) (*StartChallengeResponse, error) {
+func createResources(ctx context.Context, userId, challengeId, instanceId, token string) (*StartChallengeResponse, error) {
 	challengeUrl := getChallengeUrl(instanceId)
 
 	kubeClient, err := infrastructure.CreateClient()
 	if err != nil {
 		return nil, err
 	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	// Create resources
 	name := infrastructure.GetNamespaceName(userId, challengeId)

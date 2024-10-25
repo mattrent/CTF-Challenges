@@ -1,11 +1,14 @@
 @host=https://deployer
 # @no-reject-unauthorized
 
+### Health
+GET /health
+
 ### Authorize
 POST /users/login
 Content-Type: application/json
 
-{ "username":"admin", "password": "KXU91MRs2XZYae4yxS7mu8965pWIlq60" }
+{ "username":"admin", "password": "" }
 
 > {% client.global.set("auth_token", response.body.token); %}
 
@@ -24,12 +27,6 @@ Content-Disposition: form-data; name="upload[]"; filename="challenge.zip"
 
 < ./challenge-web/challenge.zip
 --boundary--
-
-### Health
-GET /health
-
-### Download challenge
-GET /challenges/bfd06649-3826-4bea-9aca-30433fe7c554/download?token=xakDt8jS01FpaMn1VA4Ay2k8MXSRJQ6VN7A4QvQr6sw=
 
 ### Start challenge
 POST /challenges/7d15d73d-3ebe-4e4f-bebe-2631b4b29554/start

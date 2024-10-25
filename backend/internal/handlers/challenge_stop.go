@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"net/http"
@@ -31,9 +30,7 @@ func StopChallenge(c *gin.Context) {
 	}
 
 	// Delete namespace
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-	err = clientset.CoreV1().Namespaces().Delete(ctx, infrastructure.GetNamespaceName(userId, challengeId), metav1.DeleteOptions{})
+	err = clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(userId, challengeId), metav1.DeleteOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

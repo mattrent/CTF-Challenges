@@ -25,44 +25,41 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 			Kind:       "VirtualMachine",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      "challenge",
 			Namespace: namespace,
 			Labels:    map[string]string{},
+			Name:      "challenge",
 		},
 		Spec: kubevirt.VirtualMachineSpec{
 			RunStrategy: ptr(kubevirt.RunStrategyRerunOnFailure),
 			Template: &kubevirt.VirtualMachineInstanceTemplateSpec{
-				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{},
-				},
 				Spec: kubevirt.VirtualMachineInstanceSpec{
 					Domain: kubevirt.DomainSpec{
 						Devices: kubevirt.Devices{
 							AutoattachGraphicsDevice: ptr(false),
 							Disks: []kubevirt.Disk{
 								{
-									Name: containerDiskName,
 									DiskDevice: kubevirt.DiskDevice{
 										Disk: &kubevirt.DiskTarget{
 											Bus: kubevirt.DiskBusVirtio,
 										},
 									},
+									Name: containerDiskName,
 								},
 								{
-									Name: cloudInitDiskName,
 									DiskDevice: kubevirt.DiskDevice{
 										Disk: &kubevirt.DiskTarget{
 											Bus: kubevirt.DiskBusVirtio,
 										},
 									},
+									Name: cloudInitDiskName,
 								},
 							},
 							Interfaces: []kubevirt.Interface{
 								{
-									Name: "default",
 									InterfaceBindingMethod: kubevirt.InterfaceBindingMethod{
 										Masquerade: &kubevirt.InterfaceMasquerade{},
 									},
+									Name: "default",
 								},
 							},
 						},
@@ -77,27 +74,28 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 					},
 					Volumes: []kubevirt.Volume{
 						{
-							Name: containerDiskName,
 							VolumeSource: kubevirt.VolumeSource{
 								ContainerDisk: &kubevirt.ContainerDiskSource{
 									Image: config.Values.VMImageUrl,
 								},
 							},
+							Name: containerDiskName,
 						}, {
-							Name: cloudInitDiskName,
 							VolumeSource: kubevirt.VolumeSource{
 								CloudInitNoCloud: &kubevirt.CloudInitNoCloudSource{
 									UserData: userData,
 								},
 							},
+							Name: cloudInitDiskName,
 						},
 					},
+					TerminationGracePeriodSeconds: ptr(int64(30)),
 					Networks: []kubevirt.Network{
 						{
-							Name: "default",
 							NetworkSource: kubevirt.NetworkSource{
 								Pod: &kubevirt.PodNetwork{},
 							},
+							Name: "default",
 						},
 					},
 					// LivenessProbe: &kubevirt.Probe{

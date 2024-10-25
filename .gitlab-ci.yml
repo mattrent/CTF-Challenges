@@ -20,4 +20,3 @@ build:
     - docker push $BACKEND_IMAGE_NAME:$IMAGE_TAG
     - docker build -t $FRONTEND_IMAGE_NAME:$IMAGE_TAG -f frontend/Dockerfile ./frontend
     - docker push $FRONTEND_IMAGE_NAME:$IMAGE_TAG
-

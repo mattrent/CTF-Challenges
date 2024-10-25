@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"context"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
-	"github.com/gin-gonic/gin"
 	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"net/http"
 )
 
 func GetChallengeLogs(c *gin.Context) {
@@ -34,14 +34,14 @@ func GetChallengeLogs(c *gin.Context) {
 	}
 
 	namespace := infrastructure.GetNamespaceName(userId, challengeId)
-	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
+	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	req := clientset.CoreV1().Pods(namespace).GetLogs(pods.Items[0].Name, &corev1.PodLogOptions{Container: "guest-console-log"})
-	logReader, err := req.Stream(context.Background())
+	logReader, err := req.Stream(c)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"deployer/config"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
@@ -31,13 +30,13 @@ func GetChallengeStatus(c *gin.Context) {
 	}
 
 	namespace := infrastructure.GetNamespaceName(userId, challengeId)
-	pods, err := clientset.CoreV1().Pods(namespace).List(context.Background(), metav1.ListOptions{})
+	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	ns, err := clientset.CoreV1().Namespaces().Get(context.Background(), namespace, metav1.GetOptions{})
+	ns, err := clientset.CoreV1().Namespaces().Get(c, namespace, metav1.GetOptions{})
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"started": false,
