@@ -47,7 +47,7 @@ ingress:
   host: deployer.local.lan
 
 env:
-  DBHOST: "deployer-postgresql.ctf.svc.cluster.local"
+  DBHOST: "deployer-postgresql"
   DBPORT: 5432
   DBUSER: postgres
   DBNAME: postgres
@@ -58,12 +58,12 @@ env:
   MAXVMMEMORY: "1024M"
   # Minutes before challenge instances are automatically deleted
   CHALLENGELIFETIMEMINUTES: 120
-  # URL from where VM's download challenge files
-  BACKENDURL: "https://deployer.local.lan"
+  # URL where VM's can download challenge files from the deployer service
+  BACKENDURL: "http://deployer"
   # The domain of which subdomains are generated, example: 7651121c-b8d2-43e9-af88-c493d8ad8a75.local.lan
   CHALLENGEDOMAIN: ".local.lan"
   VMIMAGEURL: "registry.gitlab.com/ctf9215737/ctf/alpinevm"
-  CTFDURL: "https://ctfd.local.lan"
+  # URL where the deployer service can access CTFd
+  CTFDURL: "http://ctfd"
   CTFDAPITOKEN: "ctfd_..."
   GIN_MODE: "release"
-

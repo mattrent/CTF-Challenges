@@ -46,7 +46,7 @@ spec:
               - name: DBPASSWORD
                 valueFrom:
                   secretKeyRef:
-                    name: deployer-postgresql
+                    name: {{ .Release.Name }}-postgresql
                     key: postgres-password
                     optional: false
               - name: ADMINPASSWORD
