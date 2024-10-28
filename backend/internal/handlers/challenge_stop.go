@@ -4,6 +4,7 @@ import (
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -14,12 +15,19 @@ func StopChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := c.GetString(userIdValue)
 
-	_, err := storage.GetChallenge(challengeId)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{
-			"message": "Challenge not found",
-		})
-		return
+	var challenge storage.Challenge
+	if id, err := strconv.Atoi(challengeId); err == nil {
+		challenge, err = storage.GetChallengeByCtfdId(id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": "CTFd challenge not found"})
+			return
+		}
+	} else {
+		challenge, err = storage.GetChallenge(challengeId)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Challenge not found"})
+			return
+		}
 	}
 
 	kubeconfig := infrastructure.GetKubeConfigSingleton()
@@ -30,7 +38,7 @@ func StopChallenge(c *gin.Context) {
 	}
 
 	// Delete namespace
-	err = clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(userId, challengeId), metav1.DeleteOptions{})
+	err = clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(userId, challenge.Id), metav1.DeleteOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

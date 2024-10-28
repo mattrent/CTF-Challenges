@@ -26,3 +26,5 @@ helm repo add bitnami https://charts.bitnami.com/bitnami
 helm repo update
 helm dependency build ./helm
 helm install -f ./helm/values.yaml deployer ./helm --namespace ctf --create-namespace
+# helm upgrade deployer ./helm -f ./helm/values.yaml --namespace ctf
+# helm uninstall deployer --namespace ctf

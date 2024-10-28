@@ -121,7 +121,7 @@ func buildCloudInit(challengeId, token, challengeUrl string) string {
 runcmd:
 - [wget, --no-check-certificate, -O, "/tmp/challenge.zip", "%s/challenges/%s/download?token=%s"]
 - unzip -d /tmp/challenge/ /tmp/challenge.zip
-- DOMAIN="%s" docker compose -f /tmp/challenge/compose.yaml up -d
+- DOMAIN="%s" docker compose -f /tmp/challenge/compose.yaml up
 `, config.Values.BackendUrl, challengeId, token, challengeUrl)
 	return userData
 }

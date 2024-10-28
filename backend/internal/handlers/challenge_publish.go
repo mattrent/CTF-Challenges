@@ -137,7 +137,7 @@ func PublishChallenge(c *gin.Context) {
 		_, err = client.PostFiles(&ctfd.PostFilesParams{
 			Files: []*ctfd.InputFile{
 				{
-					Name:    "handout",
+					Name:    "handout.zip",
 					Content: data,
 				},
 			},
