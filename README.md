@@ -16,6 +16,10 @@ See `backend/examples/requests.http` for examples of API usage.
 
 ## Frontend
 
-Challenges can be deployed from CTFd with `frontend/container_challenges`.
+Challenges can be deployed from CTFd with the plugin in `frontend/container_challenges`.
 
-The plugin requires setting the environment variables `JWTSECRET` and `BACKENDURL`, where `JWTSECRET` will be available in the secret mentioned above.
+The plugin requires the environment variables `JWTSECRET` and `BACKENDURL`, where `JWTSECRET` will be available in the secret mentioned above.
+
+## Challenge examples
+
+Challenge examples can be found in `backend/examples/`.

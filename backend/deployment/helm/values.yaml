@@ -16,7 +16,9 @@ serviceAccount:
   name: ""
 
 podAnnotations: {}
-podLabels: {}
+podLabels:
+  app: deployer
+
 podSecurityContext: {}
 
 securityContext:
@@ -76,7 +78,7 @@ env:
   CTFDAPITOKEN: "ctfd_..."
   GIN_MODE: "release"
 
-# Postgres subchart: Use own secret to avoid replacing the Postgres secret on upgrade
+# PostgreSQL subchart: Use own secret to avoid replacing the Postgres secret on upgrade
 postgresql:
   auth:
     existingSecret: deployer-postgresql

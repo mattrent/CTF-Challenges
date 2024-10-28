@@ -1,2 +1,3 @@
+# Challenge: web
 
-# Challenge: Web
+Simple web challenge.

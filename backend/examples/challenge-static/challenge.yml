@@ -1,0 +1,16 @@
+name: static
+category: rev
+description: Reverse the application
+author: author
+type: dynamic
+
+solution: Use a reverse engineering or debug tool to see the character offsets applied to the input.
+
+flags:
+    - flag{static-example}
+
+extra:
+    function: linear
+    initial: 500
+    decay: 10
+    minimum: 50

@@ -3,3 +3,5 @@
 echo '<a href=" ' . $_ENV["WEB1URL"] . '">Web1</a><br>';
 echo '<a href=" ' . $_ENV["WEB2URL"] . '">Web2</a><br>';
 ?>
+
+<pre>flag{web-links}</pre>

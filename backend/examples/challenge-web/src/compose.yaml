@@ -1,0 +1,6 @@
+services:
+  web.ctf:
+    build: ./web
+    restart: always
+    ports:
+      - "80:80"

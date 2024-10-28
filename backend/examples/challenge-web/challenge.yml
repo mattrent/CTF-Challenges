@@ -1,16 +1,16 @@
 name: web
+category: web
+description: A simple website
 author: author
-category: category
-description: A Website
 type: container
+
+solution: Nagivate to the website to find the flag.
+
+flags:
+    - flag{web-example}
 
 extra:
     function: linear
     initial: 500
     decay: 10
     minimum: 50
-
-solution: Solution description
-
-flags:
-    - flag{web-3xampl3}
