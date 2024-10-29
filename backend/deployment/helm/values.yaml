@@ -69,7 +69,7 @@ env:
   # Minutes before challenge instances are automatically deleted
   CHALLENGELIFETIMEMINUTES: 120
   # URL where VM's can download challenge files from the deployer service
-  BACKENDURL: "http://deployer"
+  BACKENDURL: "http://deployer.ctf.svc.cluster.local:8080"
   # The domain of which subdomains are generated, example: 7651121c-b8d2-43e9-af88-c493d8ad8a75.local.lan
   CHALLENGEDOMAIN: ".local.lan"
   VMIMAGEURL: "registry.gitlab.com/ctf9215737/ctf/alpinevm"

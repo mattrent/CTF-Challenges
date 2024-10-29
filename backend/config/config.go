@@ -26,6 +26,7 @@ type Config struct {
 	ChallengeDomain          string
 	VMImageUrl               string
 	AdminPassword            string
+	Namespace                string
 	CTFDURL                  string
 	CTFDAPIToken             string
 }

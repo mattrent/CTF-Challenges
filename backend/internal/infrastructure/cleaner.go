@@ -18,13 +18,13 @@ func StartCleaner() {
 		clientset, err := kubernetes.NewForConfig(kubeconfig)
 		if err != nil {
 			log.Println(err.Error())
-			return
+			continue
 		}
 
 		nsList, err := clientset.CoreV1().Namespaces().List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			log.Println(err.Error())
-			return
+			continue
 		}
 
 		log.Println("Checking for challenges to remove")
@@ -36,7 +36,7 @@ func StartCleaner() {
 					err = clientset.CoreV1().Namespaces().Delete(context.TODO(), ns.Name, metav1.DeleteOptions{})
 					if err != nil {
 						log.Println(err.Error())
-						return
+						continue
 					}
 				}
 			}

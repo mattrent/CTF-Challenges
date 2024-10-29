@@ -75,6 +75,7 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 	ns := infrastructure.BuildNamespace(name)
 	resources := []client.Object{
 		ns,
+		infrastructure.BuildNetworkPolicy(ns),
 		infrastructure.BuildVm(challengeId, token, ns.Name, challengeUrl),
 		infrastructure.BuildHttpService(ns.Name),
 		infrastructure.BuildHttpsService(ns.Name),
