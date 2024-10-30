@@ -1,6 +1,6 @@
 #!/bin/bash
 
-curl http://web.ctf | grep "flag{web-example}"
+curl "$CHALLENGE_URL" | grep "flag{web-example}"
 
 if [ $? -eq 0 ]
 then
