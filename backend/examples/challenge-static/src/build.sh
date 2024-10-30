@@ -1,3 +1,4 @@
 #!/bin/bash
 
-gcc rev.c -o ../handout/rev -Wall -Wextra
+gcc challenge.c -o ../handout/challenge -Wall -Wextra
+chmod +x ../handout/challenge
