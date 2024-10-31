@@ -43,6 +43,27 @@ func BuildHttpIngress(namespace string, challengeUrl string) *networkingv1.Ingre
 						},
 					},
 				},
+				{
+					Host: "*." + challengeUrl,
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: ptr(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "web",
+											Port: networkingv1.ServiceBackendPort{
+												Number: 80,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
 			},
 		},
 	}
@@ -63,6 +84,27 @@ func BuildHttpsIngress(namespace string, challengeUrl string) *networkingv1.Ingr
 			Rules: []networkingv1.IngressRule{
 				{
 					Host: challengeUrl,
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: ptr(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "webs",
+											Port: networkingv1.ServiceBackendPort{
+												Number: 443,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+				{
+					Host: "*." + challengeUrl,
 					IngressRuleValue: networkingv1.IngressRuleValue{
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
