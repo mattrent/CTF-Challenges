@@ -4,9 +4,88 @@ import (
 	"fmt"
 
 	"github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
+	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
+
+func BuildHttpIngress(namespace string, challengeUrl string) *networkingv1.Ingress {
+	return &networkingv1.Ingress{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Ingress",
+			APIVersion: "networking/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "challenge-http-ingress",
+			Namespace:   namespace,
+			Annotations: map[string]string{},
+		},
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
+				{
+					Host: challengeUrl,
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: ptr(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "web",
+											Port: networkingv1.ServiceBackendPort{
+												Number: 80,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func BuildHttpsIngress(namespace string, challengeUrl string) *networkingv1.Ingress {
+	return &networkingv1.Ingress{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Ingress",
+			APIVersion: "networking/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:        "challenge-https-ingress",
+			Namespace:   namespace,
+			Annotations: map[string]string{},
+		},
+		Spec: networkingv1.IngressSpec{
+			Rules: []networkingv1.IngressRule{
+				{
+					Host: challengeUrl,
+					IngressRuleValue: networkingv1.IngressRuleValue{
+						HTTP: &networkingv1.HTTPIngressRuleValue{
+							Paths: []networkingv1.HTTPIngressPath{
+								{
+									Path:     "/",
+									PathType: ptr(networkingv1.PathTypePrefix),
+									Backend: networkingv1.IngressBackend{
+										Service: &networkingv1.IngressServiceBackend{
+											Name: "webs",
+											Port: networkingv1.ServiceBackendPort{
+												Number: 443,
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+}
 
 func BuildHttpsIngressRoute(namespace string, challengeUrl string) *v1alpha1.IngressRouteTCP {
 	// Traefik TCP Ingress route for port 443

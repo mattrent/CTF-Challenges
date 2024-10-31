@@ -79,8 +79,10 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 		infrastructure.BuildVm(challengeId, token, ns.Name, challengeUrl),
 		infrastructure.BuildHttpService(ns.Name),
 		infrastructure.BuildHttpsService(ns.Name),
-		infrastructure.BuildHttpsIngressRoute(ns.Name, challengeUrl),
-		infrastructure.BuildHttpIngressRoute(ns.Name, challengeUrl),
+		infrastructure.BuildHttpIngress(ns.Name, challengeUrl),
+		infrastructure.BuildHttpsIngress(ns.Name, challengeUrl),
+		//infrastructure.BuildHttpsIngressRoute(ns.Name, challengeUrl),
+		//infrastructure.BuildHttpIngressRoute(ns.Name, challengeUrl),
 	}
 
 	for _, val := range resources {
