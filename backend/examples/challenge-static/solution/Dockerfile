@@ -1,6 +1,6 @@
 # docker build -t test . && docker run --rm -v ./../handout/challenge:/app/challenge -v ./../challenge.yml:/app/challenge.yml test
 
-FROM python:3.13-bookworm
+FROM python:3.13-slim-bookworm
 
 WORKDIR /app
 

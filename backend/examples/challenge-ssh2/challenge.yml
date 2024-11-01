@@ -1,4 +1,4 @@
-name: ssh
+name: ssh2
 author: "author"
 category: category
 description: A SSH challenge
@@ -13,4 +13,4 @@ extra:
 solution: Solution description
 
 flags:
-    - flag{ssh}
+    - flag{ssh-example}

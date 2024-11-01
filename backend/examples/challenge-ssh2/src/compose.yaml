@@ -1,0 +1,27 @@
+services:
+
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports:
+    - "443:443"
+    volumes:
+    - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    restart: unless-stopped
+
+  ssh-server:
+    image: linuxserver/openssh-server
+    container_name: openssh-server
+    environment:
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=test
+      - USER_NAME=test
+      - SUDO_ACCESS=false
+      - PUID=1000
+      - PGID=1000
+    restart: unless-stopped
+
+  echo-server:
+    image: mendhak/http-https-echo
+    container_name: echo-server
+    restart: unless-stopped

@@ -9,7 +9,19 @@ services:
       - USER_PASSWORD=test
       - USER_NAME=test
     ports:
-      - "443:2222"
+      - "2222:2222"
     volumes:
      - ./flag.txt:/flag.txt
+    restart: unless-stopped
+
+  web1:
+    image: php:apache
+    volumes:
+      - ./web1/index.php:/var/www/html/index.php
+    restart: unless-stopped
+
+  web2:
+    image: php:apache
+    volumes:
+      - ./web2/index.php:/var/www/html/index.php
     restart: unless-stopped
