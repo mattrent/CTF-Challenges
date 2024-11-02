@@ -63,7 +63,7 @@ func GetChallengeStatus(c *gin.Context) {
 	for _, status := range pods.Items[0].Status.ContainerStatuses {
 		if status.Name == "compute" {
 			c.JSON(http.StatusOK, gin.H{
-				"url":         getChallengeUrl(instance.Id),
+				"url":         getChallengeDomain(instance.Id),
 				"ready":       status.Ready,
 				"secondsleft": int(((time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)) - time.Since(ns.CreationTimestamp.Time)).Seconds()),
 				"started":     true,

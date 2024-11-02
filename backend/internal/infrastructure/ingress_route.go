@@ -1,6 +1,7 @@
 package infrastructure
 
 import (
+	"deployer/config"
 	"fmt"
 
 	"github.com/traefik/traefik/v3/pkg/provider/kubernetes/crd/traefikio/v1alpha1"
@@ -9,7 +10,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
-func BuildHttpIngress(namespace string, challengeUrl string) *networkingv1.Ingress {
+func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.Ingress {
 	return &networkingv1.Ingress{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Ingress",
@@ -21,9 +22,10 @@ func BuildHttpIngress(namespace string, challengeUrl string) *networkingv1.Ingre
 			Annotations: map[string]string{},
 		},
 		Spec: networkingv1.IngressSpec{
+			IngressClassName: &config.Values.IngressClassName,
 			Rules: []networkingv1.IngressRule{
 				{
-					Host: challengeUrl,
+					Host: challengeDomain,
 					IngressRuleValue: networkingv1.IngressRuleValue{
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
@@ -44,7 +46,7 @@ func BuildHttpIngress(namespace string, challengeUrl string) *networkingv1.Ingre
 					},
 				},
 				{
-					Host: "*." + challengeUrl,
+					Host: "*." + challengeDomain,
 					IngressRuleValue: networkingv1.IngressRuleValue{
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
@@ -69,21 +71,29 @@ func BuildHttpIngress(namespace string, challengeUrl string) *networkingv1.Ingre
 	}
 }
 
-func BuildHttpsIngress(namespace string, challengeUrl string) *networkingv1.Ingress {
+func BuildHttpsIngress(namespace string, challengeDomain string) *networkingv1.Ingress {
 	return &networkingv1.Ingress{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Ingress",
 			APIVersion: "networking/v1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:        "challenge-https-ingress",
-			Namespace:   namespace,
-			Annotations: map[string]string{},
+			Name:      "challenge-https-ingress",
+			Namespace: namespace,
+			Annotations: map[string]string{
+				"nginx.ingress.kubernetes.io/backend-protocol":   "HTTPS",
+				"nginx.ingress.kubernetes.io/force-ssl-redirect": "true",
+				"cert-manager.io/issuer":                         "step-issuer",
+				"cert-manager.io/issuer-kind":                    "StepIssuer",
+				"cert-manager.io/issuer-group":                   "certmanager.step.sm",
+				//&config.Values.IngressAnnotations,
+			},
 		},
 		Spec: networkingv1.IngressSpec{
+			IngressClassName: &config.Values.IngressClassName,
 			Rules: []networkingv1.IngressRule{
 				{
-					Host: challengeUrl,
+					Host: challengeDomain,
 					IngressRuleValue: networkingv1.IngressRuleValue{
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
@@ -104,7 +114,7 @@ func BuildHttpsIngress(namespace string, challengeUrl string) *networkingv1.Ingr
 					},
 				},
 				{
-					Host: "*." + challengeUrl,
+					Host: "*." + challengeDomain,
 					IngressRuleValue: networkingv1.IngressRuleValue{
 						HTTP: &networkingv1.HTTPIngressRuleValue{
 							Paths: []networkingv1.HTTPIngressPath{
@@ -125,11 +135,19 @@ func BuildHttpsIngress(namespace string, challengeUrl string) *networkingv1.Ingr
 					},
 				},
 			},
+			TLS: []networkingv1.IngressTLS{
+				{
+					Hosts: []string{
+						challengeDomain,
+					},
+					SecretName: config.Values.IngressTlsSecretName,
+				},
+			},
 		},
 	}
 }
 
-func BuildHttpsIngressRoute(namespace string, challengeUrl string) *v1alpha1.IngressRouteTCP {
+func BuildHttpsIngressRoute(namespace string, challengeDomain string) *v1alpha1.IngressRouteTCP {
 	// Traefik TCP Ingress route for port 443
 	return &v1alpha1.IngressRouteTCP{
 		TypeMeta: metav1.TypeMeta{
@@ -144,7 +162,7 @@ func BuildHttpsIngressRoute(namespace string, challengeUrl string) *v1alpha1.Ing
 		Spec: v1alpha1.IngressRouteTCPSpec{
 			EntryPoints: []string{"websecure"},
 			Routes: []v1alpha1.RouteTCP{{
-				Match: fmt.Sprintf("HostSNI(`%s`) || HostSNIRegexp(`{anydomain:.*}.%s`)", challengeUrl, challengeUrl),
+				Match: fmt.Sprintf("HostSNI(`%s`) || HostSNIRegexp(`{anydomain:.*}.%s`)", challengeDomain, challengeDomain),
 				Services: []v1alpha1.ServiceTCP{
 					{
 						Name: "webs",
@@ -159,7 +177,7 @@ func BuildHttpsIngressRoute(namespace string, challengeUrl string) *v1alpha1.Ing
 	}
 }
 
-func BuildHttpIngressRoute(namespace string, challengeUrl string) *v1alpha1.IngressRoute {
+func BuildHttpIngressRoute(namespace string, challengeDomain string) *v1alpha1.IngressRoute {
 	// Traefik ingress route for port 80
 	return &v1alpha1.IngressRoute{
 		TypeMeta: metav1.TypeMeta{
@@ -175,7 +193,7 @@ func BuildHttpIngressRoute(namespace string, challengeUrl string) *v1alpha1.Ingr
 			EntryPoints: []string{"web"},
 			Routes: []v1alpha1.Route{{
 				Kind:  "Rule",
-				Match: fmt.Sprintf("Host(`%s`) || HostRegexp(`{anydomain:.*}.%s`)", challengeUrl, challengeUrl),
+				Match: fmt.Sprintf("Host(`%s`) || HostRegexp(`{anydomain:.*}.%s`)", challengeDomain, challengeDomain),
 				Services: []v1alpha1.Service{
 					{
 						LoadBalancerSpec: v1alpha1.LoadBalancerSpec{

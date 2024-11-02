@@ -17,9 +17,9 @@ if [[ $1 == "virtctl" ]]; then
 fi 
 
 # Install Traefik
-helm repo add traefik https://traefik.github.io/charts
-helm repo update
-helm install traefik traefik/traefik
+# helm repo add traefik https://traefik.github.io/charts
+# helm repo update
+# helm install traefik traefik/traefik
 
 # Install Helm Chart
 helm repo add bitnami https://charts.bitnami.com/bitnami

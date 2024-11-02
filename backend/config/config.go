@@ -29,6 +29,9 @@ type Config struct {
 	Namespace                string
 	CTFDURL                  string
 	CTFDAPIToken             string
+	IngressClassName         string
+	IngressTlsSecretName     string
+	IngressAnnotations       string
 }
 
 func initConfig() Config {

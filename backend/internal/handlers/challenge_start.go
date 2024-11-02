@@ -58,12 +58,12 @@ func StartChallenge(c *gin.Context) {
 	c.JSON(http.StatusOK, res)
 }
 
-func getChallengeUrl(instanceId string) string {
+func getChallengeDomain(instanceId string) string {
 	return instanceId + config.Values.ChallengeDomain
 }
 
 func createResources(ctx context.Context, userId, challengeId, instanceId, token string) (*StartChallengeResponse, error) {
-	challengeUrl := getChallengeUrl(instanceId)
+	challengeDomain := getChallengeDomain(instanceId)
 
 	kubeClient, err := infrastructure.CreateClient()
 	if err != nil {
@@ -76,13 +76,13 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 	resources := []client.Object{
 		ns,
 		infrastructure.BuildNetworkPolicy(ns),
-		infrastructure.BuildVm(challengeId, token, ns.Name, challengeUrl),
+		infrastructure.BuildVm(challengeId, token, ns.Name, challengeDomain),
 		infrastructure.BuildHttpService(ns.Name),
 		infrastructure.BuildHttpsService(ns.Name),
-		infrastructure.BuildHttpIngress(ns.Name, challengeUrl),
-		infrastructure.BuildHttpsIngress(ns.Name, challengeUrl),
-		//infrastructure.BuildHttpsIngressRoute(ns.Name, challengeUrl),
-		//infrastructure.BuildHttpIngressRoute(ns.Name, challengeUrl),
+		infrastructure.BuildHttpIngress(ns.Name, challengeDomain),
+		infrastructure.BuildHttpsIngress(ns.Name, challengeDomain),
+		//infrastructure.BuildHttpsIngressRoute(ns.Name, challengeDomain),
+		//infrastructure.BuildHttpIngressRoute(ns.Name, challengeDomain),
 	}
 
 	for _, val := range resources {
@@ -94,9 +94,9 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 		}
 	}
 
-	log.Println("Started: " + challengeUrl)
+	log.Println("Started: " + challengeDomain)
 	return &StartChallengeResponse{
-		Url:         challengeUrl,
+		Url:         challengeDomain,
 		SecondsLeft: int((time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)).Seconds()),
 		Started:     true,
 	}, nil

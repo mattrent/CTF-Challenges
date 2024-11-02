@@ -54,7 +54,17 @@ readinessProbe:
     port: 8080
 
 ingress:
+  create: true
   host: deployer.local.lan
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/issuer: "step-issuer"
+    cert-manager.io/issuer-kind: "StepIssuer"
+    cert-manager.io/issuer-group: "certmanager.step.sm"
+  useTls: true
+  tlsSecretName: "step-tls"
 
 env:
   DBHOST: "deployer-postgresql"
@@ -65,7 +75,7 @@ env:
   UPLOADPATH: "/uploads"
   # Min and max allowed memory used by VM
   MINVMMEMORY: "256M"
-  MAXVMMEMORY: "1024M"
+  MAXVMMEMORY: "2048M"
   # Minutes before challenge instances are automatically deleted
   CHALLENGELIFETIMEMINUTES: 120
   # URL where VM's can download challenge files from the deployer service
