@@ -26,6 +26,12 @@ func GetChallengeLogs(c *gin.Context) {
 		return
 	}
 
+	instance, err := storage.GetInstanceByPlayer(challengeId, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	kubeconfig := infrastructure.GetKubeConfigSingleton()
 	clientset, err := kubernetes.NewForConfig(kubeconfig)
 	if err != nil {
@@ -33,7 +39,7 @@ func GetChallengeLogs(c *gin.Context) {
 		return
 	}
 
-	namespace := infrastructure.GetNamespaceName(userId, challengeId)
+	namespace := infrastructure.GetNamespaceName(instance.Id)
 	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

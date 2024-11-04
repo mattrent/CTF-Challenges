@@ -59,7 +59,7 @@ func StartChallenge(c *gin.Context) {
 }
 
 func getChallengeDomain(instanceId string) string {
-	return instanceId + config.Values.ChallengeDomain
+	return instanceId[0:18] + config.Values.ChallengeDomain
 }
 
 func createResources(ctx context.Context, userId, challengeId, instanceId, token string) (*StartChallengeResponse, error) {
@@ -71,7 +71,7 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 	}
 
 	// Create resources
-	name := infrastructure.GetNamespaceName(userId, challengeId)
+	name := infrastructure.GetNamespaceName(instanceId)
 	ns := infrastructure.BuildNamespace(name)
 	resources := []client.Object{
 		ns,
@@ -79,6 +79,7 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 		infrastructure.BuildVm(challengeId, token, ns.Name, challengeDomain),
 		infrastructure.BuildHttpService(ns.Name),
 		infrastructure.BuildHttpsService(ns.Name),
+		infrastructure.BuildSshService(ns.Name),
 		infrastructure.BuildHttpIngress(ns.Name, challengeDomain),
 		infrastructure.BuildHttpsIngress(ns.Name, challengeDomain),
 		//infrastructure.BuildHttpsIngressRoute(ns.Name, challengeDomain),

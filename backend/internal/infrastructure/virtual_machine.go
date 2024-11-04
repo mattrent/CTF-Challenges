@@ -34,6 +34,9 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 			Template: &kubevirt.VirtualMachineInstanceTemplateSpec{
 				Spec: kubevirt.VirtualMachineInstanceSpec{
 					Domain: kubevirt.DomainSpec{
+						CPU: &kubevirt.CPU{
+							Cores: config.Values.VMCPUs,
+						},
 						Devices: kubevirt.Devices{
 							AutoattachGraphicsDevice: ptr(false),
 							Disks: []kubevirt.Disk{

@@ -5,8 +5,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func GetNamespaceName(userId, challengeId string) string {
-	return "challenge-" + challengeId[0:13] + "-" + userId
+func GetNamespaceName(instanceId string) string {
+	return "challenge-" + instanceId[0:18]
 }
 
 func BuildNamespace(name string) *corev1.Namespace {

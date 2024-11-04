@@ -5,6 +5,30 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+func BuildSshService(namespace string) *corev1.Service {
+	// Kubernetes Service SSH
+	return &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "ssh",
+			Namespace: namespace,
+			Labels:    map[string]string{},
+		},
+		Spec: corev1.ServiceSpec{
+			Ports: []corev1.ServicePort{
+				{
+					Name:     "ssh",
+					Protocol: corev1.ProtocolTCP,
+					Port:     2222,
+				},
+			},
+			Selector: map[string]string{
+				"vm.kubevirt.io/name": "challenge",
+			},
+			Type: corev1.ServiceTypeClusterIP,
+		},
+	}
+}
+
 func BuildHttpService(namespace string) *corev1.Service {
 	// Kubernetes Service HTTP
 	return &corev1.Service{
@@ -18,7 +42,7 @@ func BuildHttpService(namespace string) *corev1.Service {
 				{
 					Name:     "http",
 					Protocol: corev1.ProtocolTCP,
-					Port:     80,
+					Port:     8080,
 				},
 			},
 			Selector: map[string]string{
@@ -42,7 +66,7 @@ func BuildHttpsService(namespace string) *corev1.Service {
 				{
 					Name:     "https",
 					Protocol: corev1.ProtocolTCP,
-					Port:     443,
+					Port:     8443,
 				},
 			},
 			Selector: map[string]string{

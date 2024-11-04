@@ -36,7 +36,7 @@ func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.In
 										Service: &networkingv1.IngressServiceBackend{
 											Name: "web",
 											Port: networkingv1.ServiceBackendPort{
-												Number: 80,
+												Number: 8080,
 											},
 										},
 									},
@@ -57,7 +57,7 @@ func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.In
 										Service: &networkingv1.IngressServiceBackend{
 											Name: "web",
 											Port: networkingv1.ServiceBackendPort{
-												Number: 80,
+												Number: 8080,
 											},
 										},
 									},
@@ -104,7 +104,7 @@ func BuildHttpsIngress(namespace string, challengeDomain string) *networkingv1.I
 										Service: &networkingv1.IngressServiceBackend{
 											Name: "webs",
 											Port: networkingv1.ServiceBackendPort{
-												Number: 443,
+												Number: 8443,
 											},
 										},
 									},
@@ -125,7 +125,7 @@ func BuildHttpsIngress(namespace string, challengeDomain string) *networkingv1.I
 										Service: &networkingv1.IngressServiceBackend{
 											Name: "webs",
 											Port: networkingv1.ServiceBackendPort{
-												Number: 443,
+												Number: 8443,
 											},
 										},
 									},
@@ -166,7 +166,7 @@ func BuildHttpsIngressRoute(namespace string, challengeDomain string) *v1alpha1.
 				Services: []v1alpha1.ServiceTCP{
 					{
 						Name: "webs",
-						Port: intstr.IntOrString{IntVal: 443},
+						Port: intstr.IntOrString{IntVal: 8443},
 					},
 				},
 			}},
@@ -199,7 +199,7 @@ func BuildHttpIngressRoute(namespace string, challengeDomain string) *v1alpha1.I
 						LoadBalancerSpec: v1alpha1.LoadBalancerSpec{
 							Name: "web",
 							Kind: "Service",
-							Port: intstr.IntOrString{IntVal: 80},
+							Port: intstr.IntOrString{IntVal: 8080},
 						},
 					},
 				},

@@ -21,6 +21,7 @@ type Config struct {
 	UploadPath               string
 	MinVMMemory              string
 	MaxVMMemory              string
+	VMCPUs                   uint32
 	ChallengeLifetimeMinutes int
 	BackendUrl               string
 	ChallengeDomain          string

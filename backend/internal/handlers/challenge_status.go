@@ -45,7 +45,7 @@ func GetChallengeStatus(c *gin.Context) {
 		return
 	}
 
-	namespace := infrastructure.GetNamespaceName(userId, challenge.Id)
+	namespace := infrastructure.GetNamespaceName(instance.Id)
 	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

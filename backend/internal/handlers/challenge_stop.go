@@ -3,12 +3,11 @@ package handlers
 import (
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
-	"net/http"
-	"strconv"
-
 	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"net/http"
+	"strconv"
 )
 
 func StopChallenge(c *gin.Context) {
@@ -30,6 +29,12 @@ func StopChallenge(c *gin.Context) {
 		}
 	}
 
+	instance, err := storage.GetInstanceByPlayer(challenge.Id, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	kubeconfig := infrastructure.GetKubeConfigSingleton()
 	clientset, err := kubernetes.NewForConfig(kubeconfig)
 	if err != nil {
@@ -38,7 +43,7 @@ func StopChallenge(c *gin.Context) {
 	}
 
 	// Delete namespace
-	err = clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(userId, challenge.Id), metav1.DeleteOptions{})
+	err = clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(instance.Id), metav1.DeleteOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

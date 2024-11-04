@@ -76,6 +76,7 @@ env:
   # Min and max allowed memory used by VM
   MINVMMEMORY: "256M"
   MAXVMMEMORY: "2048M"
+  VMCPUS: 2
   # Minutes before challenge instances are automatically deleted
   CHALLENGELIFETIMEMINUTES: 120
   # URL where VM's can download challenge files from the deployer service

@@ -9,11 +9,11 @@ import (
 )
 
 type Instance struct {
-	Id          string
-	ChallengeId string
-	PlayerId    string
-	Token       string
-	CreatedAt   time.Time
+	Id          string    `json:"id"`
+	ChallengeId string    `json:"challenge_id"`
+	PlayerId    string    `json:"player_id"`
+	Token       string    `json:"token"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 func createToken(length int) (token string, err error) {

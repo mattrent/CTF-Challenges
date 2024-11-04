@@ -34,8 +34,9 @@ func BuildNetworkPolicy(ns *corev1.Namespace) *networkingv1.NetworkPolicy {
 						},
 					}},
 					Ports: []networkingv1.NetworkPolicyPort{
-						{Port: &intstr.IntOrString{IntVal: 80}},
-						{Port: &intstr.IntOrString{IntVal: 443}},
+						{Port: &intstr.IntOrString{IntVal: 2222}},
+						{Port: &intstr.IntOrString{IntVal: 8080}},
+						{Port: &intstr.IntOrString{IntVal: 8443}},
 					},
 				}},
 			Egress: []networkingv1.NetworkPolicyEgressRule{

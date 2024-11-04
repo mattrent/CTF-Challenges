@@ -6,10 +6,10 @@ import (
 )
 
 type Challenge struct {
-	Id        string
-	UserId    string
-	Published bool
-	CtfdId    sql.NullInt64
+	Id        string        `json:"id"`
+	UserId    string        `json:"user_id"`
+	Published bool          `json:"published"`
+	CtfdId    sql.NullInt64 `json:"ctfd_id"`
 }
 
 func GetChallenge(challengeId string) (Challenge, error) {
