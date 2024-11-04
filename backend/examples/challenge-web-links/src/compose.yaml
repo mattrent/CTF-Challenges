@@ -2,7 +2,7 @@ services:
   nginx:
     image: nginx:latest
     ports:
-      - "80:80"
+      - "${HTTP_PORT-8080}:80"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
     depends_on:
