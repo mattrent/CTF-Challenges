@@ -25,3 +25,9 @@ services:
     image: mendhak/http-https-echo
     container_name: echo-server
     restart: unless-stopped
+
+  healtcheck:
+    build: ./healthcheck
+    ports:
+      - "${HTTP_PORT-127.0.0.1:8080}:8080"
+    restart: unless-stopped

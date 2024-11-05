@@ -7,6 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	kubevirt "kubevirt.io/api/core/v1"
 )
 
@@ -101,18 +102,18 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 							Name: "default",
 						},
 					},
-					// LivenessProbe: &kubevirt.Probe{
-					// 	Handler: kubevirt.Handler{
-					// 		HTTPGet: &corev1.HTTPGetAction{
-					// 			Path: "/",
-					// 			Port: intstr.FromInt(80),
-					// 		},
-					// 	},
-					// 	InitialDelaySeconds: 300,
-					// 	PeriodSeconds:       30,
-					// 	TimeoutSeconds:      10,
-					// 	FailureThreshold:    5,
-					// },
+					LivenessProbe: &kubevirt.Probe{
+						Handler: kubevirt.Handler{
+							HTTPGet: &corev1.HTTPGetAction{
+								Path: "/",
+								Port: intstr.FromInt(8080),
+							},
+						},
+						InitialDelaySeconds: 300,
+						PeriodSeconds:       30,
+						TimeoutSeconds:      10,
+						FailureThreshold:    5,
+					},
 				},
 			},
 		},
