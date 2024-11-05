@@ -9,9 +9,9 @@ services:
       - USER_PASSWORD=test
       - USER_NAME=test
     ports:
-      - "${SSH_PORT-2222}:2222"
+      - "${SSH_PORT-127.0.0.1:2222}:2222"
     volumes:
-     - ./flag.txt:/flag.txt
+     - ./flag.txt:/flag.txt:ro
     restart: unless-stopped
 
   web1:
