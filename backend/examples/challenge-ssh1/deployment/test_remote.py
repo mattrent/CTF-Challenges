@@ -56,3 +56,7 @@ for i in range(30):
 r = s.post(host + "/challenges/" + challenge_id + "/stop", timeout=20)
 print("stop challenge:", r.status_code, r.content)
 r.raise_for_status()
+
+# publish challenge to CTFd
+# r = s.post(host + "/challenges/" + challenge_id + "/publish", timeout=20)
+# print("publish:", r.status_code, r.content)
