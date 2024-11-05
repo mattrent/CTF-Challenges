@@ -23,3 +23,5 @@ The plugin requires the environment variables `JWTSECRET` and `BACKENDURL`, wher
 ## Challenge examples
 
 Challenge examples can be found in `backend/examples/`.
+
+The API allows adding, updating, starting, and stopping challenges. After adding a challenge, it can be deployed to CTFd using the publish API endpoint. With the CTFd plugin installed, players can start and stop published challenges from CTFd. See the scripts in the deployment directory of each challenge for examples of how to deploy and publish challenges.
