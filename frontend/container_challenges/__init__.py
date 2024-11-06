@@ -121,8 +121,8 @@ def load(app):
 
 
     def get_token():
-        token = session['token']
-        return token['access_token']
+        token = session["token"]
+        return token["access_token"]
 
 
     @app.route("/containers/<challenge_id>/status", methods=["GET"])
