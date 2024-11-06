@@ -5,11 +5,9 @@ from CTFd.plugins.container_challenges.decay import DECAY_FUNCTIONS, logarithmic
 from CTFd.plugins.migrations import upgrade
 from flask import Blueprint, session
 from CTFd.utils.decorators import authed_only
-import jwt
 import requests
 import urllib.parse
 import os
-import datetime
 import urllib3
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -120,20 +118,17 @@ def load(app):
     )
 
     backend_url = os.environ["BACKENDURL"]
-    jwt_secret = os.environ["JWTSECRET"]
 
-    def create_token():
-        return jwt.encode({
-            "userid": str(session["id"]),
-            "role": "player",
-            "exp": int((datetime.datetime.now() + datetime.timedelta(days=1)).timestamp())
-            }, jwt_secret, algorithm="HS256")
+
+    def get_token():
+        token = session['token']
+        return token['access_token']
 
 
     @app.route("/containers/<challenge_id>/status", methods=["GET"])
     @authed_only
     def challenge_status(challenge_id):
-        token = create_token()
+        token = get_token()
         headers = {"Authorization": f"Bearer {token}"}
         url = urllib.parse.urljoin(backend_url, "challenges/" + str(challenge_id) + "/status")
         print("request", url)
@@ -145,7 +140,7 @@ def load(app):
     @app.route("/containers/<challenge_id>/start", methods=["POST"])
     @authed_only
     def challenge_start(challenge_id):
-        token = create_token()
+        token = get_token()
         headers = {"Authorization": f"Bearer {token}"}
         url = urllib.parse.urljoin(backend_url, "challenges/" + str(challenge_id) + "/start")
         print("request", url)
@@ -157,7 +152,7 @@ def load(app):
     @app.route("/containers/<challenge_id>/stop", methods=["POST"])
     @authed_only
     def challenge_stop(challenge_id):
-        token = create_token()
+        token = get_token()
         headers = {"Authorization": f"Bearer {token}"}
         url = urllib.parse.urljoin(backend_url, "challenges/" + str(challenge_id) + "/stop")
         print("request", url)
