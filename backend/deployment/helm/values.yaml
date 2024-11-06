@@ -88,6 +88,7 @@ env:
   CTFDURL: "http://ctfd"
   CTFDAPITOKEN: "ctfd_..."
   GIN_MODE: "release"
+  JWKSURL: "http://localhost:8080/realms/ctf/protocol/openid-connect/certs"
 
 # PostgreSQL subchart: Use own secret to avoid replacing the Postgres secret on upgrade
 postgresql:

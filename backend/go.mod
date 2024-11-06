@@ -5,13 +5,13 @@ go 1.22.4
 toolchain go1.22.5
 
 require (
+	github.com/MicahParks/keyfunc/v3 v3.3.5
 	github.com/ctfer-io/go-ctfd v0.9.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/golang-migrate/migrate/v4 v4.17.1
 	github.com/joho/godotenv v1.5.1
 	github.com/kelseyhightower/envconfig v1.4.0
-	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.9.0
 	github.com/traefik/traefik/v3 v3.1.1
 	golang.org/x/crypto v0.24.0
@@ -24,6 +24,7 @@ require (
 )
 
 require (
+	github.com/MicahParks/jwkset v0.5.19 // indirect
 	github.com/aws/aws-sdk-go v1.49.6 // indirect
 	github.com/bytedance/sonic v1.11.6 // indirect
 	github.com/bytedance/sonic/loader v0.1.1 // indirect
@@ -78,6 +79,7 @@ require (
 	github.com/openshift/custom-resource-status v1.1.2 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rs/zerolog v1.29.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
