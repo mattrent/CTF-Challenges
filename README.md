@@ -18,10 +18,12 @@ See `backend/examples/requests.http` for examples of API usage.
 
 Challenges can be deployed from CTFd with the plugin in `frontend/container_challenges`.
 
-The plugin requires the environment variable `BACKENDURL`.
+The plugin requires the environment variable `BACKENDURL` to call the Backend API.
+
+The optional environment variable `API_TOKEN` will create an initial API token in CTFd. The API token should have same value in both the frontend and backend configuration if deploying both applications in one operation.
 
 ## Challenge examples
 
-Challenge examples can be found in `backend/examples/`.
+Challenge examples are found in `backend/examples/`.
 
 The API allows adding, updating, starting, and stopping challenges. After adding a challenge, it can be deployed to CTFd using the publish API endpoint. With the CTFd plugin installed, players can start and stop published challenges from CTFd. See the scripts in the deployment directory of each challenge for examples of how to deploy and publish challenges.

@@ -5,10 +5,14 @@ from CTFd.plugins.container_challenges.decay import DECAY_FUNCTIONS, logarithmic
 from CTFd.plugins.migrations import upgrade
 from flask import Blueprint, session
 from CTFd.utils.decorators import authed_only
+from CTFd.models import Users
+from CTFd.utils.encoding import hexencode
+from CTFd.models import UserTokens
 import requests
 import urllib.parse
 import os
 import urllib3
+import datetime
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -116,6 +120,21 @@ def load(app):
     register_plugin_assets_directory(
         app, base_path="/plugins/container_challenges/assets/"
     )
+
+    # Create deployer user and api-token if not exist
+    api_token = os.getenv("API_TOKEN")
+    if api_token:
+        api_user_name = "deployer-api-user"
+        api_user = Users.query.filter_by(name=api_user_name).first()
+        if not api_user:
+            user = Users(name=api_user_name, password=hexencode(os.urandom(32)), type="admin", hidden=True)
+            db.session.add(user)
+            db.session.commit()
+            expiration = datetime.datetime.utcnow() + datetime.timedelta(days=3650)
+            token = UserTokens(user_id=user.id, expiration=expiration, description="deployer-service", value=api_token)
+            db.session.add(token)
+            db.session.commit()
+
 
     backend_url = os.environ["BACKENDURL"]
 
