@@ -26,7 +26,6 @@ securityContext:
   capabilities:
     drop:
     - ALL
-  readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 1001
 
@@ -94,4 +93,3 @@ env:
 postgresql:
   auth:
     existingSecret: deployer-postgresql
-
