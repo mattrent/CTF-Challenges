@@ -31,7 +31,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 			Name:      "challenge",
 		},
 		Spec: kubevirt.VirtualMachineSpec{
-			RunStrategy: ptr(kubevirt.RunStrategyRerunOnFailure),
+			RunStrategy: ptr(kubevirt.RunStrategyAlways),
 			Template: &kubevirt.VirtualMachineInstanceTemplateSpec{
 				Spec: kubevirt.VirtualMachineInstanceSpec{
 					Domain: kubevirt.DomainSpec{
@@ -93,7 +93,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 							Name: cloudInitDiskName,
 						},
 					},
-					TerminationGracePeriodSeconds: ptr(int64(30)),
+					TerminationGracePeriodSeconds: ptr(int64(0)),
 					Networks: []kubevirt.Network{
 						{
 							NetworkSource: kubevirt.NetworkSource{
