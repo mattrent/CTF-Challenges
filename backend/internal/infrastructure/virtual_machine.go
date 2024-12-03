@@ -8,12 +8,9 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 	kubevirt "kubevirt.io/api/core/v1"
 )
-
-func ptr[V any](v V) *V {
-	return &v
-}
 
 func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.VirtualMachine {
 	containerDiskName := "containerdisk"
@@ -31,7 +28,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 			Name:      "challenge",
 		},
 		Spec: kubevirt.VirtualMachineSpec{
-			RunStrategy: ptr(kubevirt.RunStrategyAlways),
+			RunStrategy: ptr.To(kubevirt.RunStrategyAlways),
 			Template: &kubevirt.VirtualMachineInstanceTemplateSpec{
 				Spec: kubevirt.VirtualMachineInstanceSpec{
 					Domain: kubevirt.DomainSpec{
@@ -39,7 +36,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 							Cores: config.Values.VMCPUs,
 						},
 						Devices: kubevirt.Devices{
-							AutoattachGraphicsDevice: ptr(false),
+							AutoattachGraphicsDevice: ptr.To(false),
 							Disks: []kubevirt.Disk{
 								{
 									DiskDevice: kubevirt.DiskDevice{
@@ -73,7 +70,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 							},
 						},
 						Memory: &kubevirt.Memory{
-							Guest: ptr(resource.MustParse(config.Values.MaxVMMemory)),
+							Guest: ptr.To(resource.MustParse(config.Values.MaxVMMemory)),
 						},
 					},
 					Volumes: []kubevirt.Volume{
@@ -93,7 +90,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 							Name: cloudInitDiskName,
 						},
 					},
-					TerminationGracePeriodSeconds: ptr(int64(0)),
+					TerminationGracePeriodSeconds: ptr.To(int64(0)),
 					Networks: []kubevirt.Network{
 						{
 							NetworkSource: kubevirt.NetworkSource{
@@ -109,7 +106,7 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 								Port: intstr.FromInt(8080),
 							},
 						},
-						InitialDelaySeconds: 300,
+						InitialDelaySeconds: 600,
 						PeriodSeconds:       30,
 						TimeoutSeconds:      10,
 						FailureThreshold:    5,
@@ -123,9 +120,10 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 func buildCloudInit(challengeId, token, challengeUrl string) string {
 	userData := fmt.Sprintf(`#cloud-config
 runcmd:
-- [wget, --no-check-certificate, -O, "/tmp/challenge.zip", "%s/challenges/%s/download?token=%s"]
-- unzip -d /tmp/challenge/ /tmp/challenge.zip
-- HTTP_PORT="80" HTTPS_PORT="443" SSH_PORT="22" DOMAIN="%s" docker compose -f /tmp/challenge/compose.yaml up
+- mkdir /run/challenge
+- wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
+- unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
+- HTTP_PORT="8080" HTTPS_PORT="8443" SSH_PORT="2222" DOMAIN="%s" docker compose -f "/run/challenge/challenge/compose.yaml" up -d
 `, config.Values.BackendUrl, challengeId, token, challengeUrl)
 	return userData
 }

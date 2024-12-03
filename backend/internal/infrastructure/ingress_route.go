@@ -8,6 +8,7 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 )
 
 func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.Ingress {
@@ -31,7 +32,7 @@ func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.In
 							Paths: []networkingv1.HTTPIngressPath{
 								{
 									Path:     "/",
-									PathType: ptr(networkingv1.PathTypePrefix),
+									PathType: ptr.To(networkingv1.PathTypePrefix),
 									Backend: networkingv1.IngressBackend{
 										Service: &networkingv1.IngressServiceBackend{
 											Name: "web",
@@ -52,7 +53,7 @@ func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.In
 							Paths: []networkingv1.HTTPIngressPath{
 								{
 									Path:     "/",
-									PathType: ptr(networkingv1.PathTypePrefix),
+									PathType: ptr.To(networkingv1.PathTypePrefix),
 									Backend: networkingv1.IngressBackend{
 										Service: &networkingv1.IngressServiceBackend{
 											Name: "web",
@@ -99,7 +100,7 @@ func BuildHttpsIngress(namespace string, challengeDomain string) *networkingv1.I
 							Paths: []networkingv1.HTTPIngressPath{
 								{
 									Path:     "/",
-									PathType: ptr(networkingv1.PathTypePrefix),
+									PathType: ptr.To(networkingv1.PathTypePrefix),
 									Backend: networkingv1.IngressBackend{
 										Service: &networkingv1.IngressServiceBackend{
 											Name: "webs",
@@ -120,7 +121,7 @@ func BuildHttpsIngress(namespace string, challengeDomain string) *networkingv1.I
 							Paths: []networkingv1.HTTPIngressPath{
 								{
 									Path:     "/",
-									PathType: ptr(networkingv1.PathTypePrefix),
+									PathType: ptr.To(networkingv1.PathTypePrefix),
 									Backend: networkingv1.IngressBackend{
 										Service: &networkingv1.IngressServiceBackend{
 											Name: "webs",

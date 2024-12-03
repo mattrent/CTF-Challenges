@@ -7,6 +7,7 @@ import (
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/utils/ptr"
 )
 
 func BuildNetworkPolicy(ns *corev1.Namespace) *networkingv1.NetworkPolicy {
@@ -54,7 +55,7 @@ func BuildNetworkPolicy(ns *corev1.Namespace) *networkingv1.NetworkPolicy {
 					Ports: []networkingv1.NetworkPolicyPort{
 						{
 							Port:     &intstr.IntOrString{IntVal: 53},
-							Protocol: ptr(corev1.ProtocolUDP),
+							Protocol: ptr.To(corev1.ProtocolUDP),
 						},
 					},
 				},
