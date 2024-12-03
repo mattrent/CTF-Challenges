@@ -7,6 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ChallengeList godoc
+// @Summary      Callenges List
+// @Tags         challenges
+// @Accept       json
+// @Produce      json
+// @Router       /challenges [get]
+// @Security BearerAuth
 func ListChallenges(c *gin.Context) {
 	res, err := storage.ListChallenges()
 	if err != nil {

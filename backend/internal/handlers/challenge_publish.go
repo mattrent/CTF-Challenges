@@ -60,6 +60,14 @@ type HintElement struct {
 	String    *string
 }
 
+// ChallengePublish godoc
+// @Summary      Challenge Publish
+// @Tags         challenges
+// @Param        id	path		string				true	"Challenge ID"
+// @Accept       json
+// @Produce      json
+// @Router       /challenges/{id}/publish [post]
+// @Security BearerAuth
 func PublishChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := c.GetString(userIdValue)

@@ -20,6 +20,14 @@ type StartChallengeResponse struct {
 	Started     bool   `json:"started"`
 }
 
+// ChallengeStart godoc
+// @Summary      Challenge Start
+// @Tags         challenges
+// @Param        id	path		string				true	"Challenge ID"
+// @Accept       json
+// @Produce      json
+// @Router       /challenges/{id}/start [post]
+// @Security BearerAuth
 func StartChallenge(c *gin.Context) {
 	userId := c.GetString(userIdValue)
 	challengeId := c.Param("id")

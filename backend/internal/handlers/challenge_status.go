@@ -13,6 +13,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// ChallengeStatus godoc
+// @Summary      Challenge Status
+// @Tags         challenges
+// @Param        id	path		string				true	"Challenge ID"
+// @Accept       json
+// @Produce      json
+// @Router       /challenges/{id}/status [get]
+// @Security BearerAuth
 func GetChallengeStatus(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := c.GetString(userIdValue)

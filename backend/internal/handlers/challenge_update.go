@@ -12,6 +12,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ChallengeUpdate godoc
+// @Summary      Challenge Update
+// @Tags         challenges
+// @Accept       mpfd
+// @Produce      json
+// @Param        id	path		string				true	"Challenge ID"
+// @Param upload[] formData []file true "files" collectionFormat(multi)
+// @Router       /challenges/{id} [put]
+// @Security BearerAuth
 func UpdateChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := c.GetString(userIdValue)

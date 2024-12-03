@@ -12,6 +12,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ChallengeAdd godoc
+// @Summary      Challenge Add
+// @Tags         challenges
+// @Accept       mpfd
+// @Produce      json
+// @Param upload[] formData []file true "files" collectionFormat(multi)
+// @Router       /challenges [post]
+// @Security BearerAuth
 func AddChallenge(c *gin.Context) {
 	userId, exists := c.Get(userIdValue)
 	if !exists {

@@ -1,0 +1,182 @@
+definitions:
+  handlers.LoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /challenges:
+    get:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Callenges List
+      tags:
+      - challenges
+    post:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - collectionFormat: multi
+        description: files
+        in: formData
+        items:
+          type: file
+        name: upload[]
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Challenge Add
+      tags:
+      - challenges
+  /challenges/{id}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Challenge Delete
+      tags:
+      - challenges
+    put:
+      consumes:
+      - multipart/form-data
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - collectionFormat: multi
+        description: files
+        in: formData
+        items:
+          type: file
+        name: upload[]
+        required: true
+        type: array
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Challenge Update
+      tags:
+      - challenges
+  /challenges/{id}/publish:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Challenge Publish
+      tags:
+      - challenges
+  /challenges/{id}/start:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Challenge Start
+      tags:
+      - challenges
+  /challenges/{id}/status:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Challenge Status
+      tags:
+      - challenges
+  /challenges/{id}/stop:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Challenge Stop
+      tags:
+      - challenges
+  /users/login:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Credentials
+        in: body
+        name: login
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.LoginRequest'
+      produces:
+      - application/json
+      responses: {}
+      summary: User Login
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer <jwt-token>"
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

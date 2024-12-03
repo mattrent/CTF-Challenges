@@ -8,12 +8,21 @@ import (
 	"log"
 	"net/http"
 
+	swaggerFiles "github.com/swaggo/files"
+
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
+	_ "deployer/docs"
+
 	"github.com/gin-gonic/gin"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 )
 
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
+// @description Type "Bearer <jwt-token>"
 func main() {
 	log.Println("Starting...")
 	logf.SetLogger(zap.New())
@@ -50,6 +59,8 @@ func main() {
 	router.GET("/challenges/:id/download", handlers.DownloadChallenge)
 
 	router.POST("/challenges/:id/publish", auth.RequireDeveloper, handlers.PublishChallenge)
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := router.SetTrustedProxies(nil)
 	if err != nil {

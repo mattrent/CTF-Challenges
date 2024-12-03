@@ -10,6 +10,14 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// ChallengeDelete godoc
+// @Summary      Challenge Delete
+// @Tags         challenges
+// @Param        id	path		string				true	"Challenge ID"
+// @Accept       json
+// @Produce      json
+// @Router       /challenges/{id} [delete]
+// @Security BearerAuth
 func DeleteChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := c.GetString(userIdValue)

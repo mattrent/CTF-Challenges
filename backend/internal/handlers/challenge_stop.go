@@ -3,13 +3,22 @@ package handlers
 import (
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
+	"net/http"
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"net/http"
-	"strconv"
 )
 
+// ChallengeStop godoc
+// @Summary      Challenge Stop
+// @Tags         challenges
+// @Param        id	path		string				true	"Challenge ID"
+// @Accept       json
+// @Produce      json
+// @Router       /challenges/{id}/stop [post]
+// @Security BearerAuth
 func StopChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := c.GetString(userIdValue)
