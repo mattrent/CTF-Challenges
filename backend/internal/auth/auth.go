@@ -23,7 +23,11 @@ type Claims struct {
 }
 
 type KeycloakClaims struct {
-	Roles []string `json:"roles"`
+	ResourceAccess struct {
+		Deployer struct {
+			Roles []string `json:"roles"`
+		} `json:"deployer"`
+	} `json:"resource_access"`
 	jwt.RegisteredClaims
 }
 
@@ -107,7 +111,7 @@ func RequireRole(c *gin.Context, allowedRoles []string) {
 		}
 
 		var intersect []string
-		for _, role := range claims.Roles {
+		for _, role := range claims.ResourceAccess.Deployer.Roles {
 			if slices.Contains(allowedRoles, role) {
 				intersect = append(intersect, role)
 			}
