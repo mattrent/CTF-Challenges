@@ -13,14 +13,17 @@ import (
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
+var Db *sql.DB
+
 func InitDb() {
-	db, err := sql.Open("postgres", config.Values.DbConn)
+	var err error
+	Db, err = sql.Open("postgres", config.Values.DbConn)
 	if err != nil {
 		log.Println("Opening connection to DB")
 		log.Fatal(err.Error())
 	}
 
-	err = db.Ping()
+	err = Db.Ping()
 	if err != nil {
 		log.Println("Testing connection to DB")
 		log.Fatal(err.Error())
@@ -45,7 +48,7 @@ func InitDb() {
 		if err != nil {
 			log.Fatal(err.Error())
 		}
-		res, err := db.Exec("INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) ON CONFLICT (username) DO NOTHING", "admin", hashedPassword, "admin")
+		res, err := Db.Exec("INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3) ON CONFLICT (username) DO NOTHING", "admin", hashedPassword, "admin")
 		if err != nil {
 			log.Fatal(err.Error())
 		}

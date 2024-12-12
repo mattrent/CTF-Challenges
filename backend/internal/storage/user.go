@@ -1,10 +1,5 @@
 package storage
 
-import (
-	"database/sql"
-	"deployer/config"
-)
-
 type User struct {
 	Id           string
 	Username     string
@@ -15,12 +10,7 @@ type User struct {
 func GetUser(username string) (User, error) {
 	var user User
 
-	db, err := sql.Open("postgres", config.Values.DbConn)
-	if err != nil {
-		return user, err
-	}
-
-	err = db.QueryRow("SELECT id, username, password_hash, role FROM users WHERE username=$1;", username).Scan(&user.Id, &user.Username, &user.PasswordHash, &user.Role)
+	err := Db.QueryRow("SELECT id, username, password_hash, role FROM users WHERE username=$1;", username).Scan(&user.Id, &user.Username, &user.PasswordHash, &user.Role)
 	if err != nil {
 		return user, err
 	}
@@ -29,12 +19,7 @@ func GetUser(username string) (User, error) {
 }
 
 func CreateUser(username, passwordHash, role string) error {
-	db, err := sql.Open("postgres", config.Values.DbConn)
-	if err != nil {
-		return err
-	}
-
-	_, err = db.Exec("INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)", username, passwordHash, role)
+	_, err := Db.Exec("INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)", username, passwordHash, role)
 	if err != nil {
 		return err
 	}
