@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"deployer/internal/auth"
 	"deployer/internal/handlers"
 	"deployer/internal/infrastructure"
@@ -26,6 +27,9 @@ import (
 func main() {
 	log.Println("Starting...")
 	logf.SetLogger(zap.New())
+
+	// TEMP: Allow self-signed certificates for testing
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 
 	storage.InitDb()
 
