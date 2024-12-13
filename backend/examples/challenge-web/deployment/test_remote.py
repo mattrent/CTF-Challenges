@@ -21,10 +21,17 @@ with open("../challenge.yml", encoding="utf-8") as stream:
     config = yaml.safe_load(stream)
 
 # login
-r = s.post(host + "/users/login", json={ "username": username, "password": password }, timeout=20)
-print("login:", r.status_code, r.content)
-r.raise_for_status()
-s.headers = {"Authorization": "Bearer " + r.json().get("token")}
+login_with_keycloak = False
+if login_with_keycloak:
+    r = s.post("https://ctf.sdu.dk/keycloak/realms/ctf/protocol/openid-connect/token/", data={"client_id":"deployer", "username": username, "password": password, "grant_type": "password", "scope": "openid"}, timeout=20)
+    print("login:", r.status_code, r.content)
+    r.raise_for_status()
+    s.headers = {"Authorization": "Bearer " + r.json().get("access_token")}
+else:
+    r = s.post(host + "/users/login", json={ "username": username, "password": password }, timeout=20)
+    print("login:", r.status_code, r.content)
+    r.raise_for_status()
+    s.headers = {"Authorization": "Bearer " + r.json().get("token")}
 
 # add challenge
 r = s.post(host + "/challenges", files=[
