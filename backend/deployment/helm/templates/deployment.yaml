@@ -56,8 +56,8 @@ spec:
               - name: DBPASSWORD
                 valueFrom:
                   secretKeyRef:
-                    name: deployer-postgresql
-                    key: postgres-password
+                    name: {{ .Values.postgresql.auth.existingSecret }}
+                    key: {{ .Values.postgresql.auth.secretKeys.adminPasswordKey }}
                     optional: false
               - name: ADMINPASSWORD
                 valueFrom:

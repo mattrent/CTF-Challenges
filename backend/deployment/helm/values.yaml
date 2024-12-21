@@ -93,3 +93,5 @@ env:
 postgresql:
   auth:
     existingSecret: deployer-postgresql
+    secretKeys:
+      adminPasswordKey: postgres-password
