@@ -34,6 +34,7 @@ type Config struct {
 	IngressTlsSecretName     string
 	IngressAnnotations       string
 	JwksUrl                  string
+	RootCert                 string
 }
 
 func initConfig() Config {

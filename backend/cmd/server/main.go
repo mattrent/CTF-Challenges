@@ -8,6 +8,9 @@ import (
 	"deployer/internal/storage"
 	"log"
 	"net/http"
+	"crypto/x509"
+	"io/ioutil"
+	"deployer/config"
 
 	swaggerFiles "github.com/swaggo/files"
 
@@ -28,8 +31,25 @@ func main() {
 	log.Println("Starting...")
 	logf.SetLogger(zap.New())
 
-	// TEMP: Allow self-signed certificates for testing
-	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	if config.Values.RootCert != "" {
+		rootCertPool := x509.NewCertPool()
+		certs, errCert := ioutil.ReadFile(config.Values.RootCert)
+		if errCert != nil {
+			log.Fatalf("Failed to read root certificate: %v", errCert)
+		}
+
+		if ok := rootCertPool.AppendCertsFromPEM(certs); !ok {
+			log.Fatalf("Failed to append root certificate to pool")
+		}
+
+		// Create a custom TLS configuration
+		tlsConfig := &tls.Config{
+			RootCAs: rootCertPool,
+		}
+
+		// Setup the HTTP client with the custom transport
+		http.DefaultTransport.(*http.Transport).TLSClientConfig = tlsConfig
+	}
 
 	storage.InitDb()
 

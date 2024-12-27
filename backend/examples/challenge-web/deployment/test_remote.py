@@ -21,9 +21,9 @@ with open("../challenge.yml", encoding="utf-8") as stream:
     config = yaml.safe_load(stream)
 
 # login
-login_with_keycloak = False
+login_with_keycloak = True
 if login_with_keycloak:
-    r = s.post("https://ctf.sdu.dk/keycloak/realms/ctf/protocol/openid-connect/token/", data={"client_id":"deployer", "username": username, "password": password, "grant_type": "password", "scope": "openid"}, timeout=20)
+    r = s.post("https://myhost/keycloak/realms/ctf/protocol/openid-connect/token/", data={"client_id":"deployer", "username": username, "password": password, "grant_type": "password", "scope": "openid"}, timeout=20, verify=False)
     print("login:", r.status_code, r.content)
     r.raise_for_status()
     s.headers = {"Authorization": "Bearer " + r.json().get("access_token")}

@@ -2,3 +2,4 @@ uploads/
 backend/cmd/server/server
 backend/main
 *.tgz
+*.zip
