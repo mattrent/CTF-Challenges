@@ -1,6 +1,0 @@
-services:
-  solver:
-    build: .
-    network_mode: host
-    environment:
-      CHALLENGE_URL: "http://localhost:8080"

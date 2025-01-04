@@ -20,7 +20,12 @@ func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.In
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "challenge-http-ingress",
 			Namespace:   namespace,
-			Annotations: map[string]string{},
+			Annotations: map[string]string{
+				"nginx.ingress.kubernetes.io/force-ssl-redirect": "true",
+				"cert-manager.io/issuer":                         "step-issuer",
+				"cert-manager.io/issuer-kind":                    "StepIssuer",
+				"cert-manager.io/issuer-group":                   "certmanager.step.sm"
+			},
 		},
 		Spec: networkingv1.IngressSpec{
 			IngressClassName: &config.Values.IngressClassName,

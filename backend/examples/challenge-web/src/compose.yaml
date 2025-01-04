@@ -1,6 +1,0 @@
-services:
-  web.ctf:
-    build: ./web
-    ports:
-      - "${HTTP_PORT-127.0.0.1:8080}:80"
-    restart: unless-stopped

@@ -88,8 +88,8 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 		infrastructure.BuildHttpsService(ns.Name),
 		infrastructure.BuildSshService(ns.Name),
 		infrastructure.BuildHttpIngress(ns.Name, challengeDomain),
-		//infrastructure.BuildHttpsIngress(ns.Name, challengeDomain),
 		infrastructure.BuildNetworkPolicy(ns),
+		//infrastructure.BuildHttpsIngress(ns.Name, challengeDomain),
 		//infrastructure.BuildHttpsIngressRoute(ns.Name, challengeDomain),
 		//infrastructure.BuildHttpIngressRoute(ns.Name, challengeDomain),
 	}
