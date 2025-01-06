@@ -24,7 +24,7 @@ func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.In
 				"nginx.ingress.kubernetes.io/force-ssl-redirect": "true",
 				"cert-manager.io/issuer":                         "step-issuer",
 				"cert-manager.io/issuer-kind":                    "StepIssuer",
-				"cert-manager.io/issuer-group":                   "certmanager.step.sm"
+				"cert-manager.io/issuer-group":                   "certmanager.step.sm",
 			},
 		},
 		Spec: networkingv1.IngressSpec{
