@@ -30,7 +30,7 @@ func StartCleaner() {
 		log.Println("Checking for challenges to remove")
 
 		for _, ns := range nsList.Items {
-			if strings.HasPrefix(ns.Name, "challenge-") {
+			if strings.HasPrefix(ns.Name, challengeNamespacePrefix) {
 				if ns.CreationTimestamp.Time.Add(time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)).Before(time.Now()) {
 					log.Println("Deleting: " + ns.Name)
 					err = clientset.CoreV1().Namespaces().Delete(context.TODO(), ns.Name, metav1.DeleteOptions{})

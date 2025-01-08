@@ -52,6 +52,19 @@ func StartChallenge(c *gin.Context) {
 		return
 	}
 
+	runningId, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if runningId != "" {
+		c.JSON(http.StatusOK, gin.H{
+			"url":     getChallengeDomain(runningId),
+			"started": true,
+		})
+		return
+	}
+
 	instanceId, token, err := storage.CreateInstance(userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -80,7 +93,7 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 
 	// Create resources
 	name := infrastructure.GetNamespaceName(instanceId)
-	ns := infrastructure.BuildNamespace(name)
+	ns := infrastructure.BuildNamespace(name, challengeId, instanceId, userId)
 	resources := []client.Object{
 		ns,
 		infrastructure.BuildVm(challengeId, token, ns.Name, challengeDomain),

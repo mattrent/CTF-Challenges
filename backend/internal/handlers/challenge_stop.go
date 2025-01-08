@@ -38,9 +38,13 @@ func StopChallenge(c *gin.Context) {
 		}
 	}
 
-	instance, err := storage.GetInstanceByPlayer(challenge.Id, userId)
+	instanceId, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if instanceId == "" {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Challenge instance not running"})
 		return
 	}
 
@@ -52,7 +56,7 @@ func StopChallenge(c *gin.Context) {
 	}
 
 	// Delete namespace
-	err = clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(instance.Id), metav1.DeleteOptions{})
+	err = clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(instanceId), metav1.DeleteOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
