@@ -46,7 +46,7 @@ CTFd.plugin.run((_CTFd) => {
       method: "GET",
       headers: {"Content-Type": "application/json"}
     })
-      .then(response =>  response.json().then(data => ({status: response.status, body: data})))
+      .then(response => response.json().then(data => ({status: response.status, body: data})))
       .then(obj => {
         if (obj.body.started) {
           $(".start-challenge").hide();
@@ -66,14 +66,11 @@ CTFd.plugin.run((_CTFd) => {
     $(".start-challenge").on("click" , function() {
       const challenge = parseInt(CTFd.lib.$("#challenge-id").val());
       $(".start-challenge").prop("disabled", true);
-      setTimeout(() => {
-        $(".start-challenge").removeAttr("disabled");
-      }, 5000)
       CTFd.fetch("/containers/" + challenge + "/start", {
         method: "POST",
         headers: {"Content-Type": "application/json"}
       })
-        .then(response =>  response.json().then(data => ({status: response.status, body: data})))
+        .then(response => response.json().then(data => ({status: response.status, body: data})))
         .then(obj => {
           if (obj.status === 200) {
             document.getElementById("challenge-result").textContent = obj.body.url;
@@ -82,9 +79,11 @@ CTFd.plugin.run((_CTFd) => {
           } else {
             document.getElementById("challenge-result").textContent = obj.body.message;
           }
+          $(".start-challenge").removeAttr("disabled");
         })
         .catch(error => { 
           console.error(error);
+          $(".start-challenge").removeAttr("disabled");
           document.getElementById("challenge-result").textContent = "Request failed, try to reload";
         });
     });
@@ -92,14 +91,12 @@ CTFd.plugin.run((_CTFd) => {
     $(".stop-challenge").on("click", function() {
       const challenge = parseInt(CTFd.lib.$("#challenge-id").val());
       $(".stop-challenge").prop("disabled", true);
-      setTimeout(() => {
-        $(".stop-challenge").removeAttr("disabled");
-      }, 5000)
+
       CTFd.fetch("/containers/" + challenge + "/stop", {
         method: "POST",
         headers: {"Content-Type": "application/json"}, 
       })
-        .then(response =>  response.json().then(data => ({status: response.status, body: data})))
+        .then(response => response.json().then(data => ({status: response.status, body: data})))
         .then(obj => {
           if (obj.status === 200) {
             document.getElementById("challenge-result").textContent = "";
@@ -108,9 +105,11 @@ CTFd.plugin.run((_CTFd) => {
           } else {
             document.getElementById("challenge-result").textContent = obj.body.message;
           }
+          $(".stop-challenge").removeAttr("disabled");
         })
         .catch(error => { 
           console.error(error);
+          $(".stop-challenge").removeAttr("disabled");
           document.getElementById("challenge-result").textContent = "Request failed, try to reload";
         });
     });
