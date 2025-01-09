@@ -22,7 +22,6 @@ type Config struct {
 	MinVMMemory              string
 	MaxVMMemory              string
 	VMCPUs                   uint32
-	VMSSHPUBLICKEY           string
 	ChallengeLifetimeMinutes int
 	BackendUrl               string
 	ChallengeDomain          string
