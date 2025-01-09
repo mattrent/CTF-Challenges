@@ -26,9 +26,13 @@ func GetChallengeLogs(c *gin.Context) {
 		return
 	}
 
-	instance, err := storage.GetInstanceByPlayer(challengeId, userId)
+	instanceId, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if instanceId == "" {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Challenge instance not running"})
 		return
 	}
 
@@ -39,7 +43,7 @@ func GetChallengeLogs(c *gin.Context) {
 		return
 	}
 
-	namespace := infrastructure.GetNamespaceName(instance.Id)
+	namespace := infrastructure.GetNamespaceName(instanceId)
 	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
