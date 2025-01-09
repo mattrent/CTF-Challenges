@@ -4,6 +4,7 @@ import (
 	"deployer/config"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -40,9 +41,13 @@ func GetChallengeStatus(c *gin.Context) {
 		}
 	}
 
-	instance, err := storage.GetInstanceByPlayer(challenge.Id, userId)
+	instanceId, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Challenge not found"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if instanceId == "" {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Challenge instance not running"})
 		return
 	}
 
@@ -53,7 +58,7 @@ func GetChallengeStatus(c *gin.Context) {
 		return
 	}
 
-	namespace := infrastructure.GetNamespaceName(instance.Id)
+	namespace := infrastructure.GetNamespaceName(instanceId)
 	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -62,6 +67,7 @@ func GetChallengeStatus(c *gin.Context) {
 
 	ns, err := clientset.CoreV1().Namespaces().Get(c, namespace, metav1.GetOptions{})
 	if err != nil {
+		log.Println("Could not get namespace: " + namespace + " " + err.Error())
 		c.JSON(http.StatusOK, gin.H{
 			"started": false,
 		})
@@ -71,7 +77,7 @@ func GetChallengeStatus(c *gin.Context) {
 	for _, status := range pods.Items[0].Status.ContainerStatuses {
 		if status.Name == "compute" {
 			c.JSON(http.StatusOK, gin.H{
-				"url":         getChallengeDomain(instance.Id),
+				"url":         getChallengeDomain(instanceId),
 				"ready":       status.Ready,
 				"secondsleft": int(((time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)) - time.Since(ns.CreationTimestamp.Time)).Seconds()),
 				"started":     true,

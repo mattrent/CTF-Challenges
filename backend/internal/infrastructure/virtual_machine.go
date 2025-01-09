@@ -125,5 +125,6 @@ runcmd:
 - unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
 - HTTP_PORT="8080" HTTPS_PORT="8443" SSH_PORT="2222" DOMAIN="%s" docker compose -f "/run/challenge/challenge/compose.yaml" up -d
 `, config.Values.BackendUrl, challengeId, token, challengeUrl)
+
 	return userData
 }
