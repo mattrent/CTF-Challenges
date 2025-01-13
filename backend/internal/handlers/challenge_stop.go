@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"deployer/internal/auth"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"net/http"
@@ -21,7 +22,7 @@ import (
 // @Security BearerAuth
 func StopChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
-	userId := c.GetString(userIdValue)
+	userId := auth.GetCurrentUserId(c)
 
 	var challenge storage.Challenge
 	if id, err := strconv.Atoi(challengeId); err == nil {

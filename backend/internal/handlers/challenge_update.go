@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"deployer/config"
+	"deployer/internal/auth"
 	"deployer/internal/storage"
 	"log"
 	"net/http"
@@ -23,7 +24,7 @@ import (
 // @Security BearerAuth
 func UpdateChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
-	userId := c.GetString(userIdValue)
+	userId := auth.GetCurrentUserId(c)
 
 	challenge, err := storage.GetChallenge(challengeId)
 	if err != nil {
@@ -32,7 +33,7 @@ func UpdateChallenge(c *gin.Context) {
 		})
 		return
 	}
-	if challenge.UserId != userId {
+	if challenge.UserId != userId && !auth.IsAdmin(c) {
 		c.JSON(http.StatusUnauthorized, gin.H{})
 		return
 	}

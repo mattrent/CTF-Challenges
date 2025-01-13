@@ -31,6 +31,16 @@ type KeycloakClaims struct {
 	jwt.RegisteredClaims
 }
 
+const (
+	AdminRoleKey     = "admin"
+	DeveloperRoleKey = "developer"
+)
+
+const (
+	ContextUserIdKey = "userid"
+	ContextRoleKey   = "role"
+)
+
 func HashPassword(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -57,11 +67,11 @@ func RequireAuth(c *gin.Context) {
 }
 
 func RequireAdmin(c *gin.Context) {
-	RequireRole(c, []string{"admin"})
+	RequireRole(c, []string{AdminRoleKey})
 }
 
 func RequireDeveloper(c *gin.Context) {
-	RequireRole(c, []string{"admin", "developer"})
+	RequireRole(c, []string{AdminRoleKey, DeveloperRoleKey})
 }
 
 func RequireRole(c *gin.Context, allowedRoles []string) {
@@ -123,7 +133,13 @@ func RequireRole(c *gin.Context, allowedRoles []string) {
 			return
 		}
 
-		c.Set("userid", claims.Subject)
+		c.Set(ContextUserIdKey, claims.Subject)
+		if slices.Contains(claims.ResourceAccess.Deployer.Roles, AdminRoleKey) {
+			c.Set(ContextRoleKey, AdminRoleKey)
+		} else if slices.Contains(claims.ResourceAccess.Deployer.Roles, DeveloperRoleKey) {
+			c.Set(ContextRoleKey, DeveloperRoleKey)
+		}
+
 		log.Println("Setting context for userid for: " + claims.Subject)
 		c.Next()
 
@@ -170,8 +186,17 @@ func RequireRole(c *gin.Context, allowedRoles []string) {
 			return
 		}
 
-		c.Set("userid", claims.UserId)
+		c.Set(ContextUserIdKey, claims.UserId)
+		c.Set(ContextRoleKey, claims.Role)
 		log.Println("Setting context for userid for: " + claims.UserId)
 		c.Next()
 	}
+}
+
+func GetCurrentUserId(c *gin.Context) string {
+	return c.GetString(ContextUserIdKey)
+}
+
+func IsAdmin(c *gin.Context) bool {
+	return c.GetString(ContextRoleKey) == AdminRoleKey
 }

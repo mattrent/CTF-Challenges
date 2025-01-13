@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"deployer/internal/auth"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"io"
@@ -14,14 +15,14 @@ import (
 
 func GetChallengeLogs(c *gin.Context) {
 	challengeId := c.Param("id")
-	userId := c.GetString(userIdValue)
+	userId := auth.GetCurrentUserId(c)
 
 	challenge, err := storage.GetChallenge(challengeId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if challenge.UserId != userId {
+	if challenge.UserId != userId && !auth.IsAdmin(c) {
 		c.JSON(http.StatusUnauthorized, gin.H{})
 		return
 	}
