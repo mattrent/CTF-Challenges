@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"deployer/config"
+	"deployer/internal/auth"
 	"deployer/internal/storage"
 	"log"
 	"net/http"
@@ -20,7 +21,7 @@ type ChallengeCtfd struct {
 	Description    string        `json:"description"`
 	Value          int           `json:"value"`
 	Type           string        `json:"type"`
-	Extra          Extra         `json:"extra"`
+	Extra          *Extra        `json:"extra"`
 	Image          interface{}   `json:"image"`
 	Protocol       interface{}   `json:"protocol"`
 	Host           interface{}   `json:"host"`
@@ -70,13 +71,13 @@ type HintElement struct {
 // @Security BearerAuth
 func PublishChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
-	userId := c.GetString(userIdValue)
+	userId := auth.GetCurrentUserId(c)
 	challenge, err := storage.GetChallenge(challengeId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if challenge.UserId != userId {
+	if challenge.UserId != userId && !auth.IsAdmin(c) {
 		c.JSON(http.StatusUnauthorized, gin.H{})
 		return
 	}
@@ -118,6 +119,19 @@ func PublishChallenge(c *gin.Context) {
 	}
 
 	// Add challenge
+	log.Printf("Adding challenge of type: '%s'\n", conf.Type)
+
+	// Allow omitting extra values
+	function := "linear"
+	inital := conf.Value
+	decay := 0
+	minimum := conf.Value
+	if conf.Extra != nil {
+		function = conf.Extra.Function
+		inital = conf.Extra.Initial
+		decay = conf.Extra.Decay
+		minimum = conf.Extra.Minimum
+	}
 	ch, err = client.PostChallenges(&ctfd.PostChallengesParams{
 		Name:           conf.Name,
 		Category:       conf.Category,
@@ -125,13 +139,14 @@ func PublishChallenge(c *gin.Context) {
 		ConnectionInfo: &conf.ConnectionInfo,
 		Value:          conf.Value,
 		MaxAttempts:    &conf.Attempts,
-		Function:       conf.Extra.Function,
-		Initial:        &conf.Extra.Initial,
-		Decay:          &conf.Extra.Decay,
-		Minimum:        &conf.Extra.Minimum,
+		Function:       function,
+		Initial:        &inital,
+		Decay:          &decay,
+		Minimum:        &minimum,
 		State:          conf.State,
 		Type:           conf.Type,
 	})
+
 	if err != nil {
 		log.Println("Could not add challenge to CTFd: " + err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

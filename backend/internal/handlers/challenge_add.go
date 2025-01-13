@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"deployer/config"
+	"deployer/internal/auth"
 	"deployer/internal/storage"
 	"log"
 	"net/http"
@@ -21,13 +22,10 @@ import (
 // @Router       /challenges [post]
 // @Security BearerAuth
 func AddChallenge(c *gin.Context) {
-	userId, exists := c.Get(userIdValue)
-	if !exists {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User not valid"})
-	}
+	userId := auth.GetCurrentUserId(c)
 
 	// Add challenge to DB
-	challengeId, err := storage.CreateChallenge(userId.(string))
+	challengeId, err := storage.CreateChallenge(userId)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

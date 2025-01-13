@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"deployer/config"
+	"deployer/internal/auth"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"log"
@@ -29,7 +30,7 @@ type StartChallengeResponse struct {
 // @Router       /challenges/{id}/start [post]
 // @Security BearerAuth
 func StartChallenge(c *gin.Context) {
-	userId := c.GetString(userIdValue)
+	userId := auth.GetCurrentUserId(c)
 	challengeId := c.Param("id")
 
 	var challenge storage.Challenge
@@ -47,7 +48,7 @@ func StartChallenge(c *gin.Context) {
 		}
 	}
 
-	if challenge.UserId != userId && !challenge.Published {
+	if challenge.UserId != userId && !challenge.Published && !auth.IsAdmin(c) {
 		c.JSON(http.StatusUnauthorized, gin.H{})
 		return
 	}
