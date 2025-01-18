@@ -36,6 +36,15 @@ type Config struct {
 	IngressAnnotations       string
 	JwksUrl                  string
 	RootCert                 string
+	ChallengeReadinessProbe  KubernetesProbeConfig
+	ChallengeLivenessProbe   KubernetesProbeConfig
+}
+
+type KubernetesProbeConfig struct {
+	InitialDelaySeconds int32
+	PeriodSeconds       int32
+	TimeoutSeconds      int32
+	FailureThreshold    int32
 }
 
 func initConfig() Config {
