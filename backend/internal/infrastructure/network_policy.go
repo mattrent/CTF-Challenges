@@ -36,7 +36,7 @@ func BuildNetworkPolicy(ns *corev1.Namespace) *networkingv1.NetworkPolicy {
 					}},
 					Ports: []networkingv1.NetworkPolicyPort{
 						{Port: &intstr.IntOrString{IntVal: 22}},
-						{Port: &intstr.IntOrString{IntVal: 2222}},
+						{Port: &intstr.IntOrString{IntVal: 8022}},
 						{Port: &intstr.IntOrString{IntVal: 8080}},
 						{Port: &intstr.IntOrString{IntVal: 8443}},
 					},

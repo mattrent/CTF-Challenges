@@ -18,7 +18,7 @@ func BuildSshService(namespace string) *corev1.Service {
 				{
 					Name:     "ssh",
 					Protocol: corev1.ProtocolTCP,
-					Port:     2222,
+					Port:     8022,
 				},
 			},
 			Selector: map[string]string{

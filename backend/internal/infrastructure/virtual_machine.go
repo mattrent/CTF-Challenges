@@ -123,7 +123,7 @@ runcmd:
 - mkdir /run/challenge
 - wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
 - unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
-- HTTP_PORT="8080" HTTPS_PORT="8443" SSH_PORT="2222" DOMAIN="%s" docker compose -f "/run/challenge/challenge/compose.yaml" up -d
+- HTTP_PORT="8080" HTTPS_PORT="8443" SSH_PORT="8022" DOMAIN="%s" docker compose -f "/run/challenge/challenge/compose.yaml" up -d
 `, config.Values.BackendUrl, challengeId, token, challengeUrl)
 
 	if len(config.Values.VMSSHPUBLICKEY) > 0 {
