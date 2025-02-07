@@ -1,6 +1,7 @@
 package config
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 
@@ -9,6 +10,12 @@ import (
 )
 
 var Values = initConfig()
+
+type Annotations map[string]string
+
+func (a *Annotations) Decode(value string) error {
+    return json.Unmarshal([]byte(value), a)
+}
 
 type Config struct {
 	DbHost                   string
@@ -32,8 +39,7 @@ type Config struct {
 	CTFDURL                  string
 	CTFDAPIToken             string
 	IngressClassName         string
-	IngressTlsSecretName     string
-	IngressAnnotations       string
+	IngressHttpAnnotations 	 Annotations
 	JwksUrl                  string
 	RootCert                 string
 }

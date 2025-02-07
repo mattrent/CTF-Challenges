@@ -52,6 +52,15 @@ readinessProbe:
     path: /health
     port: 8080
 
+challenges:
+  httpIngress:
+    annotations:
+      nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      cert-manager.io/issuer: "step-issuer"
+      cert-manager.io/issuer-kind: "StepClusterIssuer"
+      cert-manager.io/issuer-group: "certmanager.step.sm"
+
 ingress:
   create: true
   host: deployer.local.lan
@@ -60,7 +69,7 @@ ingress:
     nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     cert-manager.io/issuer: "step-issuer"
-    cert-manager.io/issuer-kind: "StepIssuer"
+    cert-manager.io/issuer-kind: "StepClusterIssuer"
     cert-manager.io/issuer-group: "certmanager.step.sm"
   useTls: true
   tlsSecretName: "step-deployer-tls"

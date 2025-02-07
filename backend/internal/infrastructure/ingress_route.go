@@ -20,12 +20,7 @@ func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.In
 		ObjectMeta: metav1.ObjectMeta{
 			Name:        "challenge-http-ingress",
 			Namespace:   namespace,
-			Annotations: map[string]string{
-				"nginx.ingress.kubernetes.io/force-ssl-redirect": "true",
-				"cert-manager.io/issuer":                         "step-issuer",
-				"cert-manager.io/issuer-kind":                    "StepIssuer",
-				"cert-manager.io/issuer-group":                   "certmanager.step.sm",
-			},
+			Annotations: config.Values.IngressHttpAnnotations,
 		},
 		Spec: networkingv1.IngressSpec{
 			IngressClassName: &config.Values.IngressClassName,
@@ -73,6 +68,14 @@ func BuildHttpIngress(namespace string, challengeDomain string) *networkingv1.In
 					},
 				},
 			},
+			TLS: []networkingv1.IngressTLS{
+				{
+					Hosts: []string{
+						challengeDomain,
+					},
+					SecretName: namespace + "-inbound-tls",
+				},
+			},
 		},
 	}
 }
@@ -90,9 +93,8 @@ func BuildHttpsIngress(namespace string, challengeDomain string) *networkingv1.I
 				"nginx.ingress.kubernetes.io/backend-protocol":   "HTTPS",
 				"nginx.ingress.kubernetes.io/force-ssl-redirect": "true",
 				"cert-manager.io/issuer":                         "step-issuer",
-				"cert-manager.io/issuer-kind":                    "StepIssuer",
+				"cert-manager.io/issuer-kind":                    "StepClusterIssuer",
 				"cert-manager.io/issuer-group":                   "certmanager.step.sm",
-				//&config.Values.IngressAnnotations,
 			},
 		},
 		Spec: networkingv1.IngressSpec{
@@ -146,7 +148,7 @@ func BuildHttpsIngress(namespace string, challengeDomain string) *networkingv1.I
 					Hosts: []string{
 						challengeDomain,
 					},
-					SecretName: config.Values.IngressTlsSecretName,
+					SecretName: namespace + "inbound-tls",
 				},
 			},
 		},

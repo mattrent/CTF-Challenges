@@ -49,10 +49,8 @@ spec:
                     fieldPath: metadata.namespace
               - name: INGRESSCLASSNAME
                 value: {{ .Values.ingress.className }}
-              - name: INGRESSTLSSECRETNAME
-                value: {{ .Values.ingress.tlsSecretName }}
-              - name: INGRESSANNOTATIONS
-                value: {{ .Values.ingress.annotations }}
+              - name: INGRESSHTTPANNOTATIONS
+                value: {{ .Values.challenges.httpIngress.annotations | toJson | quote }}
               - name: DBPASSWORD
                 valueFrom:
                   secretKeyRef:
