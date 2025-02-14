@@ -14,7 +14,7 @@ var Values = initConfig()
 type Annotations map[string]string
 
 func (a *Annotations) Decode(value string) error {
-    return json.Unmarshal([]byte(value), a)
+	return json.Unmarshal([]byte(value), a)
 }
 
 type Config struct {
@@ -39,11 +39,13 @@ type Config struct {
 	CTFDURL                  string
 	CTFDAPIToken             string
 	IngressClassName         string
-	IngressHttpAnnotations 	 Annotations
+	IngressHttpAnnotations   Annotations
 	JwksUrl                  string
 	RootCert                 string
 	ChallengeReadinessProbe  KubernetesProbeConfig
 	ChallengeLivenessProbe   KubernetesProbeConfig
+	// Currently not supported
+	ChallengeStartupProbe KubernetesProbeConfig
 }
 
 type KubernetesProbeConfig struct {
