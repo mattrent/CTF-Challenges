@@ -99,6 +99,7 @@ env:
   GIN_MODE: "release"
   JWKSURL: "http://localhost:8080/realms/ctf/protocol/openid-connect/certs"
   VMSSHPUBLICKEY: ""
+  IMAGEPULLSECRET: ""
   CHALLENGEREADINESSPROBE_INITIALDELAYSECONDS: 30
   CHALLENGEREADINESSPROBE_PERIODSECONDS: 30
   CHALLENGEREADINESSPROBE_TIMEOUTSECONDS: 5
@@ -119,3 +120,6 @@ postgresql:
     existingSecret: deployer-postgresql
     secretKeys:
       adminPasswordKey: postgres-password
+
+reflector:
+  enabled: true

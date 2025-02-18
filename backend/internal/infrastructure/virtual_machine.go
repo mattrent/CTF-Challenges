@@ -3,6 +3,7 @@ package infrastructure
 import (
 	"deployer/config"
 	"fmt"
+	"strings"
 
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -16,6 +17,13 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 	containerDiskName := "containerdisk"
 	cloudInitDiskName := "cloudinitdisk"
 	userData := buildCloudInit(challengeId, token, challengeUrl)
+
+	containerDisk := kubevirt.ContainerDiskSource{
+		Image: config.Values.VMImageUrl,
+	}
+	if strings.TrimSpace(config.Values.ImagePullSecret) != "" {
+		containerDisk.ImagePullSecret = config.Values.ImagePullSecret
+	}
 
 	return &kubevirt.VirtualMachine{
 		TypeMeta: metav1.TypeMeta{
@@ -76,12 +84,11 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 					Volumes: []kubevirt.Volume{
 						{
 							VolumeSource: kubevirt.VolumeSource{
-								ContainerDisk: &kubevirt.ContainerDiskSource{
-									Image: config.Values.VMImageUrl,
-								},
+								ContainerDisk: &containerDisk,
 							},
 							Name: containerDiskName,
-						}, {
+						},
+						{
 							VolumeSource: kubevirt.VolumeSource{
 								CloudInitNoCloud: &kubevirt.CloudInitNoCloudSource{
 									UserData: userData,

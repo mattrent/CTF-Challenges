@@ -2,5 +2,8 @@ dependencies:
 - name: postgresql
   repository: https://charts.bitnami.com/bitnami
   version: 15.5.29
-digest: sha256:e02780f5fb6cf25d49477b43986ea907d96df3167f5a398a34eedad988c841e7
-generated: "2024-12-21T17:30:38.771935947+01:00"
+- name: reflector
+  repository: https://emberstack.github.io/helm-charts
+  version: 7.1.288
+digest: sha256:b0acecf7c863a774cc54070d5ed632f628ce9b04b196181bf03f6cd23add33bb
+generated: "2025-02-18T13:22:53.322347477+01:00"

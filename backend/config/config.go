@@ -42,6 +42,7 @@ type Config struct {
 	IngressHttpAnnotations   Annotations
 	JwksUrl                  string
 	RootCert                 string
+	ImagePullSecret          string
 	ChallengeReadinessProbe  KubernetesProbeConfig
 	ChallengeLivenessProbe   KubernetesProbeConfig
 	// Currently not supported
