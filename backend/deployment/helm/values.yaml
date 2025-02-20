@@ -113,6 +113,9 @@ env:
   CHALLENGESTARTUPPROBE_PERIODSECONDS: 30
   CHALLENGESTARTUPPROBE_TIMEOUTSECONDS: 5
   CHALLENGESTARTUPPROBE_FAILURETHRESHOLD: 30
+  UNLEASH_URL: http://deployer-unleash:4242/unleash/api/
+  UNLEASH_APIKEY: default:production.unleash-insecure-api-token
+  UNLEASH_ENVIRONMENT: production
 
 # PostgreSQL subchart: Use own secret to avoid replacing the Postgres secret on upgrade
 postgresql:

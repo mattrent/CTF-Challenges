@@ -22,7 +22,7 @@ func BuildSshService(namespace string) *corev1.Service {
 				},
 			},
 			Selector: map[string]string{
-				"vm.kubevirt.io/name": "challenge",
+				"custom-challenge-selector": namespace,
 			},
 			Type: corev1.ServiceTypeClusterIP,
 		},
@@ -46,7 +46,7 @@ func BuildHttpService(namespace string) *corev1.Service {
 				},
 			},
 			Selector: map[string]string{
-				"vm.kubevirt.io/name": "challenge",
+				"custom-challenge-selector": namespace,
 			},
 			Type: corev1.ServiceTypeClusterIP,
 		},

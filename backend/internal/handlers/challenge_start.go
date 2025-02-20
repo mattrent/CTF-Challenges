@@ -11,6 +11,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Unleash/unleash-client-go/v4"
+
 	"github.com/gin-gonic/gin"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -95,9 +97,17 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 	// Create resources
 	name := infrastructure.GetNamespaceName(instanceId)
 	ns := infrastructure.BuildNamespace(name, challengeId, instanceId, userId)
+
+	var mainResource client.Object
+	if useVm := unleash.IsEnabled("use-virtual-machine"); useVm {
+		mainResource = infrastructure.BuildVm(challengeId, token, ns.Name, challengeDomain)
+	} else {
+		mainResource = infrastructure.BuildContainer(challengeId, token, ns.Name, challengeDomain)
+	}
+
 	resources := []client.Object{
 		ns,
-		infrastructure.BuildVm(challengeId, token, ns.Name, challengeDomain),
+		mainResource,
 		infrastructure.BuildHttpService(ns.Name),
 		infrastructure.BuildSshService(ns.Name),
 		infrastructure.BuildHttpIngress(ns.Name, challengeDomain),

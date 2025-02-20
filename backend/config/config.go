@@ -43,6 +43,7 @@ type Config struct {
 	JwksUrl                  string
 	RootCert                 string
 	ImagePullSecret          string
+	Unleash                  UnleashConfig
 	ChallengeReadinessProbe  KubernetesProbeConfig
 	ChallengeLivenessProbe   KubernetesProbeConfig
 	// Currently not supported
@@ -54,6 +55,12 @@ type KubernetesProbeConfig struct {
 	PeriodSeconds       int32
 	TimeoutSeconds      int32
 	FailureThreshold    int32
+}
+
+type UnleashConfig struct {
+	Url         string
+	ApiKey      string
+	Environment string
 }
 
 func initConfig() Config {
