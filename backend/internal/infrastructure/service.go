@@ -52,27 +52,3 @@ func BuildHttpService(namespace string) *corev1.Service {
 		},
 	}
 }
-
-func BuildHttpsService(namespace string) *corev1.Service {
-	// Kubernetes Service HTTPS
-	return &corev1.Service{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "webs",
-			Namespace: namespace,
-			Labels:    map[string]string{},
-		},
-		Spec: corev1.ServiceSpec{
-			Ports: []corev1.ServicePort{
-				{
-					Name:     "https",
-					Protocol: corev1.ProtocolTCP,
-					Port:     8443,
-				},
-			},
-			Selector: map[string]string{
-				"vm.kubevirt.io/name": "challenge",
-			},
-			Type: corev1.ServiceTypeClusterIP,
-		},
-	}
-}

@@ -5,5 +5,8 @@ dependencies:
 - name: reflector
   repository: https://emberstack.github.io/helm-charts
   version: 7.1.288
-digest: sha256:b0acecf7c863a774cc54070d5ed632f628ce9b04b196181bf03f6cd23add33bb
-generated: "2025-02-18T13:22:53.322347477+01:00"
+- name: unleash
+  repository: https://docs.getunleash.io/helm-charts
+  version: 5.4.0
+digest: sha256:542165cd12c19c03aa1c825ad50c60e45468fb18b0b90fa26bca75a25753142c
+generated: "2025-02-19T13:38:34.740263563+01:00"

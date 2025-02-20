@@ -17,12 +17,3 @@ func GetUser(username string) (User, error) {
 
 	return user, nil
 }
-
-func CreateUser(username, passwordHash, role string) error {
-	_, err := Db.Exec("INSERT INTO users (username, password_hash, role) VALUES ($1, $2, $3)", username, passwordHash, role)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}

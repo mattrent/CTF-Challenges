@@ -14,6 +14,7 @@ type Instance struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
+// ? what is the purpose of the token?
 func createToken(length int) (token string, err error) {
 	data := make([]byte, length)
 	_, err = rand.Read(data)

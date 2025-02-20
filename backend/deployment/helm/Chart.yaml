@@ -9,7 +9,12 @@ dependencies:
   - name: postgresql
     version: "15.5.29"
     repository: https://charts.bitnami.com/bitnami
+    condition: postgresql.enabled
   - name: reflector
     version: "7.1.288"
     repository: https://emberstack.github.io/helm-charts
     condition: reflector.enabled
+  - name: unleash
+    version: "5.4.0"
+    repository: https://docs.getunleash.io/helm-charts
+    condition: unleash.enabled

@@ -91,31 +91,15 @@ func RequireRole(c *gin.Context, allowedRoles []string) {
 			return
 		}
 		claims := &KeycloakClaims{}
-		token, err := jwt.ParseWithClaims(parts[1], claims, k.Keyfunc)
+		_, err = jwt.ParseWithClaims(parts[1], claims, k.Keyfunc)
+
 		if err != nil {
 			if errors.Is(err, jwt.ErrSignatureInvalid) {
 				log.Println("Signature error")
 				c.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
-			log.Println("Signature error")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		if !token.Valid {
-			log.Println("Token invalid")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		exp, err := token.Claims.GetExpirationTime()
-		if err != nil {
-			log.Println("Token exp error")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		if exp.Before(time.Now()) {
-			log.Println("Token expired")
+			log.Println("Expired token error")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -141,11 +125,9 @@ func RequireRole(c *gin.Context, allowedRoles []string) {
 		}
 
 		log.Println("Setting context for userid for: " + claims.Subject)
-		c.Next()
-
 	} else {
 		claims := &Claims{}
-		token, err := jwt.ParseWithClaims(parts[1], claims, func(token *jwt.Token) (interface{}, error) {
+		_, err := jwt.ParseWithClaims(parts[1], claims, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 				return nil, fmt.Errorf("signing method invalid: %v", token.Header["alg"])
 			}
@@ -158,24 +140,7 @@ func RequireRole(c *gin.Context, allowedRoles []string) {
 				c.AbortWithStatus(http.StatusUnauthorized)
 				return
 			}
-			log.Println("Signature error")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		if !token.Valid {
-			log.Println("Token invalid")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-
-		exp, err := token.Claims.GetExpirationTime()
-		if err != nil {
-			log.Println("Token exp error")
-			c.AbortWithStatus(http.StatusUnauthorized)
-			return
-		}
-		if exp.Before(time.Now()) {
-			log.Println("Token expired")
+			log.Println("Token expired error")
 			c.AbortWithStatus(http.StatusUnauthorized)
 			return
 		}
@@ -189,8 +154,8 @@ func RequireRole(c *gin.Context, allowedRoles []string) {
 		c.Set(ContextUserIdKey, claims.UserId)
 		c.Set(ContextRoleKey, claims.Role)
 		log.Println("Setting context for userid for: " + claims.UserId)
-		c.Next()
 	}
+	c.Next()
 }
 
 func GetCurrentUserId(c *gin.Context) string {

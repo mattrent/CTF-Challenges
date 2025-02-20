@@ -2,15 +2,15 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
+	"deployer/config"
 	"deployer/internal/auth"
 	"deployer/internal/handlers"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"log"
 	"net/http"
-	"crypto/x509"
-	"io/ioutil"
-	"deployer/config"
+	"os"
 
 	swaggerFiles "github.com/swaggo/files"
 
@@ -33,7 +33,7 @@ func main() {
 
 	if config.Values.RootCert != "" {
 		rootCertPool := x509.NewCertPool()
-		certs, errCert := ioutil.ReadFile(config.Values.RootCert)
+		certs, errCert := os.ReadFile(config.Values.RootCert)
 		if errCert != nil {
 			log.Fatalf("Failed to read root certificate: %v", errCert)
 		}

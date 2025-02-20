@@ -72,7 +72,7 @@ ingress:
     cert-manager.io/issuer-kind: "StepClusterIssuer"
     cert-manager.io/issuer-group: "certmanager.step.sm"
   useTls: true
-  tlsSecretName: "step-deployer-tls"
+  tlsSecretName: "deployer-inbound-tls"
 
 env:
   DBHOST: "deployer-postgresql"
@@ -116,10 +116,14 @@ env:
 
 # PostgreSQL subchart: Use own secret to avoid replacing the Postgres secret on upgrade
 postgresql:
+  enabled: true
   auth:
     existingSecret: deployer-postgresql
     secretKeys:
       adminPasswordKey: postgres-password
 
 reflector:
+  enabled: true
+
+unleash:
   enabled: true
