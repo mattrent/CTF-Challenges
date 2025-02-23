@@ -17,6 +17,157 @@ import (
 const labelName = "custom-challenge-selector"
 
 func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.Deployment {
+	const emptydirVolumeName = "emptydir-volume"
+
+	podSpec := corev1.PodSpec{
+		Containers: []corev1.Container{
+			{
+				// https://www.jenkins.io/doc/book/installing/docker/
+				Name:    "challenge-container",
+				Image:   config.Values.ContainerImageUrl,
+				Command: []string{"/bin/bash"},
+				Args: []string{"-c",
+					fmt.Sprintf(`mkdir /run/challenge
+						wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
+						unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
+						docker compose -f "/run/challenge/challenge/compose.yaml" up`,
+						config.Values.BackendUrl, challengeId, token),
+				},
+				Ports: []corev1.ContainerPort{
+					{
+						ContainerPort: 8080,
+					},
+					{
+						ContainerPort: 8022,
+					},
+				},
+				Env: []corev1.EnvVar{
+					{
+						Name:  "HTTP_PORT",
+						Value: "8080",
+					},
+					{
+						Name:  "SSH_PORT",
+						Value: "8022",
+					},
+					{
+						Name:  "DOMAIN",
+						Value: challengeUrl,
+					},
+					// 2376 for TLS; otherwise 2375
+					{
+						Name:  "DOCKER_HOST",
+						Value: "tcp://localhost:2376",
+					},
+					{
+						Name:  "DOCKER_CERT_PATH",
+						Value: "/var/run/docker-certs",
+					},
+					{
+						Name:  "DOCKER_TLS_VERIFY",
+						Value: "1",
+					},
+				},
+				VolumeMounts: []corev1.VolumeMount{
+					{
+						Name:      emptydirVolumeName,
+						MountPath: "/var/run/docker-certs",
+						ReadOnly:  true,
+					},
+				},
+				LivenessProbe: &corev1.Probe{
+					ProbeHandler: corev1.ProbeHandler{
+						HTTPGet: &corev1.HTTPGetAction{
+							Path: "/",
+							Port: intstr.FromInt(8080),
+						},
+					},
+					InitialDelaySeconds: config.Values.ChallengeLivenessProbe.InitialDelaySeconds,
+					PeriodSeconds:       config.Values.ChallengeLivenessProbe.PeriodSeconds,
+					TimeoutSeconds:      config.Values.ChallengeLivenessProbe.TimeoutSeconds,
+					FailureThreshold:    config.Values.ChallengeLivenessProbe.FailureThreshold,
+				},
+				ReadinessProbe: &corev1.Probe{
+					ProbeHandler: corev1.ProbeHandler{
+						HTTPGet: &corev1.HTTPGetAction{
+							Path: "/",
+							Port: intstr.FromInt(8080),
+						},
+					},
+					InitialDelaySeconds: config.Values.ChallengeReadinessProbe.InitialDelaySeconds,
+					PeriodSeconds:       config.Values.ChallengeReadinessProbe.PeriodSeconds,
+					TimeoutSeconds:      config.Values.ChallengeReadinessProbe.TimeoutSeconds,
+					FailureThreshold:    config.Values.ChallengeReadinessProbe.FailureThreshold,
+				},
+				StartupProbe: &corev1.Probe{
+					ProbeHandler: corev1.ProbeHandler{
+						HTTPGet: &corev1.HTTPGetAction{
+							Path: "/",
+							Port: intstr.FromInt(8080),
+						},
+					},
+					InitialDelaySeconds: config.Values.ChallengeStartupProbe.InitialDelaySeconds,
+					PeriodSeconds:       config.Values.ChallengeStartupProbe.PeriodSeconds,
+					TimeoutSeconds:      config.Values.ChallengeStartupProbe.TimeoutSeconds,
+					FailureThreshold:    config.Values.ChallengeStartupProbe.FailureThreshold,
+				},
+			},
+			{
+				// https://hub.docker.com/_/docker
+				Name:  "docker",
+				Image: "docker:dind",
+				Ports: []corev1.ContainerPort{
+					{
+						ContainerPort: 2376,
+					},
+				},
+				Env: []corev1.EnvVar{
+					{
+						Name:  "DOCKER_TLS_CERTDIR",
+						Value: "/certs",
+					},
+				},
+				SecurityContext: &corev1.SecurityContext{
+					Privileged: ptr.To(true),
+				},
+				VolumeMounts: []corev1.VolumeMount{
+					{
+						Name:      emptydirVolumeName,
+						MountPath: "/certs/client",
+					},
+				},
+				LivenessProbe: &corev1.Probe{
+					ProbeHandler: corev1.ProbeHandler{
+						Exec: &corev1.ExecAction{
+							Command: []string{"/bin/bash", "-c", "docker run hello-world"},
+						},
+					},
+					// ? Maybe make adjustable via config
+					InitialDelaySeconds: 30,
+					PeriodSeconds:       300,
+					TimeoutSeconds:      20,
+					FailureThreshold:    3,
+				},
+			},
+		},
+		Volumes: []corev1.Volume{
+			{
+				Name: emptydirVolumeName,
+				VolumeSource: corev1.VolumeSource{
+					EmptyDir: &corev1.EmptyDirVolumeSource{},
+				},
+			},
+		},
+	}
+
+	if strings.TrimSpace(config.Values.ImagePullSecret) != "" {
+		podSpec.ImagePullSecrets = []corev1.LocalObjectReference{
+			{
+				Name: config.Values.ImagePullSecret,
+			},
+		}
+	}
+
 	return &appsv1.Deployment{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "apps/v1",
@@ -39,72 +190,7 @@ func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.
 						labelName: namespace,
 					},
 				},
-				Spec: corev1.PodSpec{
-					Containers: []corev1.Container{
-						{
-							Name:  "challenge-container",
-							Image: "hello-world",
-							Ports: []corev1.ContainerPort{
-								{
-									ContainerPort: 8080,
-								},
-								{
-									ContainerPort: 8022,
-								},
-							},
-							Env: []corev1.EnvVar{
-								{
-									Name:  "HTTP_PORT",
-									Value: "8080",
-								},
-								{
-									Name:  "SSH_PORT",
-									Value: "8022",
-								},
-								{
-									Name:  "DOMAIN",
-									Value: challengeUrl,
-								},
-							},
-							LivenessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Path: "/",
-										Port: intstr.FromInt(8080),
-									},
-								},
-								InitialDelaySeconds: config.Values.ChallengeLivenessProbe.InitialDelaySeconds,
-								PeriodSeconds:       config.Values.ChallengeLivenessProbe.PeriodSeconds,
-								TimeoutSeconds:      config.Values.ChallengeLivenessProbe.TimeoutSeconds,
-								FailureThreshold:    config.Values.ChallengeLivenessProbe.FailureThreshold,
-							},
-							ReadinessProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Path: "/",
-										Port: intstr.FromInt(8080),
-									},
-								},
-								InitialDelaySeconds: config.Values.ChallengeReadinessProbe.InitialDelaySeconds,
-								PeriodSeconds:       config.Values.ChallengeReadinessProbe.PeriodSeconds,
-								TimeoutSeconds:      config.Values.ChallengeReadinessProbe.TimeoutSeconds,
-								FailureThreshold:    config.Values.ChallengeReadinessProbe.FailureThreshold,
-							},
-							StartupProbe: &corev1.Probe{
-								ProbeHandler: corev1.ProbeHandler{
-									HTTPGet: &corev1.HTTPGetAction{
-										Path: "/",
-										Port: intstr.FromInt(8080),
-									},
-								},
-								InitialDelaySeconds: config.Values.ChallengeStartupProbe.InitialDelaySeconds,
-								PeriodSeconds:       config.Values.ChallengeStartupProbe.PeriodSeconds,
-								TimeoutSeconds:      config.Values.ChallengeStartupProbe.TimeoutSeconds,
-								FailureThreshold:    config.Values.ChallengeStartupProbe.FailureThreshold,
-							},
-						},
-					},
-				},
+				Spec: podSpec,
 			},
 		},
 	}

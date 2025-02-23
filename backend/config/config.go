@@ -34,6 +34,7 @@ type Config struct {
 	BackendUrl               string
 	ChallengeDomain          string
 	VMImageUrl               string
+	ContainerImageUrl        string
 	AdminPassword            string
 	Namespace                string
 	CTFDURL                  string
