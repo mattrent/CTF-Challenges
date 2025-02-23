@@ -16,8 +16,22 @@ import (
 
 const labelName = "custom-challenge-selector"
 
+// TODO add volume for docker-compose or fix authentication for wget /download endpoint
+// ! Liveness probes basically don't work
+
 func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.Deployment {
 	const emptydirVolumeName = "emptydir-volume"
+
+	resourceRequirements := corev1.ResourceRequirements{
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse(fmt.Sprintf("%d", config.Values.VMCPUs)),
+			corev1.ResourceMemory: resource.MustParse(config.Values.MaxVMMemory),
+		},
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse(fmt.Sprintf("%d", config.Values.VMCPUs)),
+			corev1.ResourceMemory: resource.MustParse(config.Values.MinVMMemory),
+		},
+	}
 
 	podSpec := corev1.PodSpec{
 		Containers: []corev1.Container{
@@ -26,6 +40,7 @@ func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.
 				Name:    "challenge-container",
 				Image:   config.Values.ContainerImageUrl,
 				Command: []string{"/bin/bash"},
+				// run in foreground
 				Args: []string{"-c",
 					fmt.Sprintf(`mkdir /run/challenge
 						wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
@@ -75,6 +90,7 @@ func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.
 						ReadOnly:  true,
 					},
 				},
+				Resources: resourceRequirements,
 				LivenessProbe: &corev1.Probe{
 					ProbeHandler: corev1.ProbeHandler{
 						HTTPGet: &corev1.HTTPGetAction{
@@ -115,7 +131,7 @@ func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.
 			{
 				// https://hub.docker.com/_/docker
 				Name:  "docker",
-				Image: "docker:dind",
+				Image: "docker:28.0.0-dind",
 				Ports: []corev1.ContainerPort{
 					{
 						ContainerPort: 2376,
@@ -136,16 +152,17 @@ func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.
 						MountPath: "/certs/client",
 					},
 				},
+				Resources: resourceRequirements,
 				LivenessProbe: &corev1.Probe{
 					ProbeHandler: corev1.ProbeHandler{
 						Exec: &corev1.ExecAction{
-							Command: []string{"/bin/bash", "-c", "docker run hello-world"},
+							Command: []string{"docker", "ps"},
 						},
 					},
 					// ? Maybe make adjustable via config
 					InitialDelaySeconds: 30,
-					PeriodSeconds:       300,
-					TimeoutSeconds:      20,
+					PeriodSeconds:       30,
+					TimeoutSeconds:      10,
 					FailureThreshold:    3,
 				},
 			},
