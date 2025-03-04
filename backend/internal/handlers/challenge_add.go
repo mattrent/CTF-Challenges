@@ -55,6 +55,14 @@ func AddChallenge(c *gin.Context) {
 			return
 		}
 	}
+
+	challengeFile := filepath.Join(dst, "challenge.yml")
+	err = storage.UpdateChallengeFlagGivenChallengeFile(challengeFile, challengeId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"challengeid": challengeId,
 	})

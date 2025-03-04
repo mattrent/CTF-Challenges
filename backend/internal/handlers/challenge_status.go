@@ -48,7 +48,11 @@ func GetChallengeStatus(c *gin.Context) {
 		return
 	}
 	if instanceId == "" {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Challenge instance not running"})
+		c.JSON(http.StatusNotFound, gin.H{
+			"message":  "Challenge instance not running",
+			"started":  false,
+			"verified": challenge.Verified,
+		})
 		return
 	}
 
@@ -69,7 +73,7 @@ func GetChallengeStatus(c *gin.Context) {
 	ns, err := clientset.CoreV1().Namespaces().Get(c, namespace, metav1.GetOptions{})
 	if err != nil {
 		log.Println("Could not get namespace: " + namespace + " " + err.Error())
-		c.JSON(http.StatusOK, gin.H{
+		c.JSON(http.StatusInternalServerError, gin.H{
 			"started": false,
 		})
 		return

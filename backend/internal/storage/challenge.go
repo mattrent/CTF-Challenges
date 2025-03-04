@@ -2,6 +2,10 @@ package storage
 
 import (
 	"database/sql"
+	"fmt"
+	"os"
+
+	"gopkg.in/yaml.v2"
 )
 
 type Challenge struct {
@@ -12,26 +16,80 @@ type Challenge struct {
 	Verified  bool          `json:"verified"`
 }
 
+type Config struct {
+	Name        string   `yaml:"name"`
+	Author      string   `yaml:"author"`
+	Category    string   `yaml:"category"`
+	Description string   `yaml:"description"`
+	Type        string   `yaml:"type"`
+	Extra       Extra    `yaml:"extra"`
+	Solution    string   `yaml:"solution"`
+	Flags       []string `yaml:"flags"`
+}
+
+// Define a struct for the "extra" field
+type Extra struct {
+	Function string `yaml:"function"`
+	Initial  int    `yaml:"initial"`
+	Decay    int    `yaml:"decay"`
+	Minimum  int    `yaml:"minimum"`
+}
+
 func GetChallenge(challengeId string) (Challenge, error) {
 	var result Challenge
 
 	err := Db.QueryRow("SELECT id, user_id, published, ctfd_id, verified FROM challenges WHERE id=$1;", challengeId).Scan(&result.Id, &result.UserId, &result.Published, &result.CtfdId, &result.Verified)
-	if err != nil {
-		return result, err
-	}
-
-	return result, nil
+	return result, err
 }
 
 func GetChallengeByCtfdId(ctfdId int) (Challenge, error) {
 	var result Challenge
 
 	err := Db.QueryRow("SELECT id, user_id, published, ctfd_id, verified FROM challenges WHERE ctfd_id=$1;", ctfdId).Scan(&result.Id, &result.UserId, &result.Published, &result.CtfdId, &result.Verified)
+	return result, err
+}
+
+func UpdateChallengeFlag(challengeId string, flag string) error {
+	_, err := Db.Exec("UPDATE challenges SET flag=$1 WHERE id=$2", flag, challengeId)
+	return err
+}
+
+func GetChallengeFlag(challengeId string) (string, error) {
+	var expectedFlag string
+	err := Db.QueryRow("SELECT flag FROM challenges WHERE id=$1;", challengeId).Scan(&expectedFlag)
 	if err != nil {
-		return result, err
+		return "", err
+	}
+	return expectedFlag, err
+}
+
+func MarkChallengeVerified(challengeId string) error {
+	_, err := Db.Exec("UPDATE challenges SET verified=$1 WHERE id=$2", true, challengeId)
+	return err
+}
+
+func ParseChallengeYAML(filePath string) (Config, error) {
+	fileContent, err := os.ReadFile(filePath)
+	if err != nil {
+		return Config{}, fmt.Errorf("error reading file: %v", err)
 	}
 
-	return result, nil
+	var config Config
+	err = yaml.Unmarshal(fileContent, &config)
+	if err != nil {
+		return Config{}, fmt.Errorf("error parsing YAML: %v", err)
+	}
+
+	return config, nil
+}
+
+func UpdateChallengeFlagGivenChallengeFile(filePath string, challengeId string) error {
+	config, err := ParseChallengeYAML(filePath)
+	if err != nil {
+		return err
+	}
+	err = UpdateChallengeFlag(challengeId, config.Flags[0])
+	return err
 }
 
 func ListChallenges() ([]Challenge, error) {
@@ -60,25 +118,15 @@ func ListChallenges() ([]Challenge, error) {
 func CreateChallenge(userId string) (string, error) {
 	lastInsertId := ""
 	err := Db.QueryRow("INSERT INTO challenges (user_id) VALUES ($1) RETURNING id", userId).Scan(&lastInsertId)
-	if err != nil {
-		return lastInsertId, err
-	}
-
-	return lastInsertId, nil
+	return lastInsertId, err
 }
 
 func PublishChallengeWithReference(challengeId string, ctfdId int) error {
 	_, err := Db.Exec("UPDATE challenges SET published=$1, ctfd_id=$2 WHERE id=$3", true, ctfdId, challengeId)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func DeleteChallenge(challengeId string) error {
 	_, err := Db.Exec("DELETE FROM challenges WHERE id=$1", challengeId)
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
