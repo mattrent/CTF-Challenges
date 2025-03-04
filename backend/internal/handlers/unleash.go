@@ -10,6 +10,7 @@ import (
 
 func init() {
 	// Initialize Unleash client assynchronously
+	// https://docs.getunleash.io/quickstart
 	unleash.Initialize(
 		unleash.WithListener(&unleash.DebugListener{}),
 		unleash.WithAppName("deployer-service"),

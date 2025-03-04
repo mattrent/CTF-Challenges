@@ -82,6 +82,7 @@ func GetChallengeStatus(c *gin.Context) {
 				"ready":       status.Ready,
 				"secondsleft": int(((time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)) - time.Since(ns.CreationTimestamp.Time)).Seconds()),
 				"started":     true,
+				"verified":    challenge.Verified,
 			})
 			return
 		}

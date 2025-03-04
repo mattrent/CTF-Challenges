@@ -21,6 +21,7 @@ type StartChallengeResponse struct {
 	Url         string `json:"url"`
 	SecondsLeft int    `json:"secondslseft"`
 	Started     bool   `json:"started"`
+	Verified    bool   `json:"verified"`
 }
 
 // ChallengeStart godoc
@@ -62,8 +63,9 @@ func StartChallenge(c *gin.Context) {
 	}
 	if runningId != "" {
 		c.JSON(http.StatusOK, gin.H{
-			"url":     getChallengeDomain(runningId),
-			"started": true,
+			"url":      getChallengeDomain(runningId),
+			"started":  true,
+			"verified": challenge.Verified,
 		})
 		return
 	}
@@ -74,7 +76,7 @@ func StartChallenge(c *gin.Context) {
 		return
 	}
 
-	res, err := createResources(c, userId, challenge.Id, instanceId, token)
+	res, err := createResources(c, userId, challenge.Id, instanceId, token, challenge.Verified)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -86,7 +88,7 @@ func getChallengeDomain(instanceId string) string {
 	return instanceId[0:18] + config.Values.ChallengeDomain
 }
 
-func createResources(ctx context.Context, userId, challengeId, instanceId, token string) (*StartChallengeResponse, error) {
+func createResources(ctx context.Context, userId, challengeId, instanceId, token string, verified bool) (*StartChallengeResponse, error) {
 	challengeDomain := getChallengeDomain(instanceId)
 
 	kubeClient, err := infrastructure.CreateClient()
@@ -128,5 +130,6 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 		Url:         challengeDomain,
 		SecondsLeft: int((time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)).Seconds()),
 		Started:     true,
+		Verified:    verified,
 	}, nil
 }

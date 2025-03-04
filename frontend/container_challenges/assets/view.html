@@ -1,12 +1,33 @@
 {% extends "challenge.html" %}
 
 {% block description %}
-    {{ challenge.html }}
+<style>
+    .badge {
+        display: none;
+        padding: 0.5em;
+        border-radius: 0.25em;
+        font-weight: bold;
+    }
 
-    <div id="challenge-result">Loading challenge status...</div>
-    
-    <div id="challenge-actions">
-        <button class="start-challenge btn btn-md btn-success mb-2 mt-2">Start</button>
-        <button class="stop-challenge btn btn-md btn-danger mb-2 mt-2">Stop</button>
-    </div>
+    .badge-verified {
+        background-color: green;
+        color: white;
+    }
+
+    .badge-unverified {
+        background-color: red;
+        color: white;
+    }
+</style>
+
+<div id="verified-badge" class="badge mb-2 mt-2"></div>
+
+{{ challenge.html }}
+
+<div id="challenge-result">Loading challenge status...</div>
+
+<div id="challenge-actions">
+    <button class="start-challenge btn btn-md btn-success mb-2 mt-2">Start</button>
+    <button class="stop-challenge btn btn-md btn-danger mb-2 mt-2">Stop</button>
+</div>
 {% endblock %}

@@ -57,6 +57,12 @@ CTFd.plugin.run((_CTFd) => {
           $(".stop-challenge").hide();
           document.getElementById("challenge-result").textContent = "";
         }
+        const badge = $("#verified-badge");
+        if (obj.body.verified) {
+            badge.text("Verified").removeClass("badge-unverified").addClass("badge-verified").show();
+        } else {
+            badge.text("Unverified").removeClass("badge-verified").addClass("badge-unverified").show();
+        }
       })
       .catch(error => { 
         console.error(error);

@@ -3,7 +3,7 @@
 
 ## Prerequisites
 
-- Kubernetes cluster with KubeVirt and Traefik installed.
+- Kubernetes cluster with KubeVirt installed.
 - Helm client installed.
 
 ## Frontend

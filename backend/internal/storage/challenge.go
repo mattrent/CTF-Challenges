@@ -9,12 +9,13 @@ type Challenge struct {
 	UserId    string        `json:"user_id"`
 	Published bool          `json:"published"`
 	CtfdId    sql.NullInt64 `json:"ctfd_id"`
+	Verified  bool          `json:"verified"`
 }
 
 func GetChallenge(challengeId string) (Challenge, error) {
 	var result Challenge
 
-	err := Db.QueryRow("SELECT id, user_id, published, ctfd_id FROM challenges WHERE id=$1;", challengeId).Scan(&result.Id, &result.UserId, &result.Published, &result.CtfdId)
+	err := Db.QueryRow("SELECT id, user_id, published, ctfd_id, verified FROM challenges WHERE id=$1;", challengeId).Scan(&result.Id, &result.UserId, &result.Published, &result.CtfdId, &result.Verified)
 	if err != nil {
 		return result, err
 	}
@@ -25,7 +26,7 @@ func GetChallenge(challengeId string) (Challenge, error) {
 func GetChallengeByCtfdId(ctfdId int) (Challenge, error) {
 	var result Challenge
 
-	err := Db.QueryRow("SELECT id, user_id, published, ctfd_id FROM challenges WHERE ctfd_id=$1;", ctfdId).Scan(&result.Id, &result.UserId, &result.Published, &result.CtfdId)
+	err := Db.QueryRow("SELECT id, user_id, published, ctfd_id, verified FROM challenges WHERE ctfd_id=$1;", ctfdId).Scan(&result.Id, &result.UserId, &result.Published, &result.CtfdId, &result.Verified)
 	if err != nil {
 		return result, err
 	}
@@ -36,7 +37,7 @@ func GetChallengeByCtfdId(ctfdId int) (Challenge, error) {
 func ListChallenges() ([]Challenge, error) {
 	var result []Challenge
 
-	rows, err := Db.Query("SELECT id, user_id, published, ctfd_id FROM challenges;")
+	rows, err := Db.Query("SELECT id, user_id, published, ctfd_id, verified FROM challenges;")
 	if err != nil {
 		return result, err
 	}
@@ -44,7 +45,7 @@ func ListChallenges() ([]Challenge, error) {
 
 	for rows.Next() {
 		var challenge Challenge
-		err := rows.Scan(&challenge.Id, &challenge.UserId, &challenge.Published, &challenge.CtfdId)
+		err := rows.Scan(&challenge.Id, &challenge.UserId, &challenge.Published, &challenge.CtfdId, &challenge.Verified)
 		if err != nil {
 			return result, err
 		}
