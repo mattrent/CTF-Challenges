@@ -1,8 +1,6 @@
 package infrastructure
 
 import (
-	"deployer/config"
-
 	corev1 "k8s.io/api/core/v1"
 	networkingv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,7 +22,7 @@ func BuildNetworkPolicy(ns *corev1.Namespace) *networkingv1.NetworkPolicy {
 			PolicyTypes: []networkingv1.PolicyType{networkingv1.PolicyTypeIngress, networkingv1.PolicyTypeEgress},
 			PodSelector: metav1.LabelSelector{
 				MatchLabels: map[string]string{
-					"vm.kubevirt.io/name": "challenge",
+					"custom-challenge-selector": ns.Name,
 				},
 			},
 			Ingress: []networkingv1.NetworkPolicyIngressRule{
@@ -56,22 +54,6 @@ func BuildNetworkPolicy(ns *corev1.Namespace) *networkingv1.NetworkPolicy {
 						{
 							Port:     &intstr.IntOrString{IntVal: 53},
 							Protocol: ptr.To(corev1.ProtocolUDP),
-						},
-					},
-				},
-				{
-					To: []networkingv1.NetworkPolicyPeer{
-						{
-							NamespaceSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									"kubernetes.io/metadata.name": config.Values.Namespace,
-								},
-							},
-							PodSelector: &metav1.LabelSelector{
-								MatchLabels: map[string]string{
-									"app": "deployer",
-								},
-							},
 						},
 					},
 				},

@@ -36,7 +36,6 @@ type Config struct {
 	VMImageUrl               string
 	ContainerImageUrl        string
 	AdminPassword            string
-	Namespace                string
 	CTFDURL                  string
 	CTFDAPIToken             string
 	IngressClassName         string
