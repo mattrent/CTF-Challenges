@@ -29,7 +29,7 @@ func GetRunningInstanceId(c *gin.Context, userId, challengeId string) (string, e
 		return "", err
 	}
 	if len(nsList.Items) > 0 && nsList.Items[0].Status.Phase != corev1.NamespaceTerminating {
-		return nsList.Items[0].Labels["instanceid"], nil
+		return nsList.Items[0].Labels[namespaceLabelInstanceId], nil
 	}
 	return "", nil
 }

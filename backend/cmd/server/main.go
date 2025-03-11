@@ -86,6 +86,8 @@ func main() {
 
 	router.POST("/challenges/:id/verify", auth.RequireDeveloper, handlers.VerifyFlag)
 
+	router.GET("/challenges/:id/verify", auth.RequireDeveloper, handlers.StartTest)
+
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := router.SetTrustedProxies(nil)

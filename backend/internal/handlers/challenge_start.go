@@ -76,7 +76,8 @@ func StartChallenge(c *gin.Context) {
 		return
 	}
 
-	res, err := createResources(c, userId, challenge.Id, instanceId, token, challenge.Verified)
+	testMode := false
+	res, err := createResources(c, userId, challenge.Id, instanceId, token, challenge.Verified, testMode)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -88,7 +89,7 @@ func getChallengeDomain(instanceId string) string {
 	return instanceId[0:18] + config.Values.ChallengeDomain
 }
 
-func createResources(ctx context.Context, userId, challengeId, instanceId, token string, verified bool) (*StartChallengeResponse, error) {
+func createResources(ctx context.Context, userId, challengeId, instanceId, token string, verified bool, testMode bool) (*StartChallengeResponse, error) {
 	challengeDomain := getChallengeDomain(instanceId)
 
 	kubeClient, err := infrastructure.CreateClient()
@@ -98,7 +99,15 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 
 	// Create resources
 	name := infrastructure.GetNamespaceName(instanceId)
-	ns := infrastructure.BuildNamespace(name, challengeId, instanceId, userId)
+
+	var challengeIdLabel string
+	if testMode {
+		challengeIdLabel = "test-" + challengeId
+	} else {
+		challengeIdLabel = challengeId
+	}
+
+	ns := infrastructure.BuildNamespace(name, challengeIdLabel, instanceId, userId)
 
 	var mainResource client.Object
 	if useVm := unleash.IsEnabled("use-virtual-machine"); useVm {
@@ -110,10 +119,15 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 	resources := []client.Object{
 		ns,
 		mainResource,
-		infrastructure.BuildHttpService(ns.Name),
-		infrastructure.BuildSshService(ns.Name),
-		infrastructure.BuildHttpIngress(ns.Name, challengeDomain),
-		infrastructure.BuildNetworkPolicy(ns),
+	}
+
+	if !testMode {
+		resources = append(resources,
+			infrastructure.BuildHttpService(ns.Name),
+			infrastructure.BuildSshService(ns.Name),
+			infrastructure.BuildHttpIngress(ns.Name, challengeDomain),
+			infrastructure.BuildNetworkPolicy(ns),
+		)
 	}
 
 	for _, val := range resources {

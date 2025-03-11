@@ -39,12 +39,19 @@ func StopChallenge(c *gin.Context) {
 		}
 	}
 
-	instanceId, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
+	instanceIdChallenge, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	if instanceId == "" {
+
+	instanceIdTest, err := infrastructure.GetRunningInstanceId(c, userId, "test-"+challenge.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if instanceIdChallenge == "" && instanceIdTest == "" {
 		c.JSON(http.StatusNotFound, gin.H{"message": "Challenge instance not running"})
 		return
 	}
@@ -56,14 +63,23 @@ func StopChallenge(c *gin.Context) {
 		return
 	}
 
-	// Delete namespace
-	err = clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(instanceId), metav1.DeleteOptions{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	if instanceIdChallenge != "" {
+		deleteNamespace(c, clientset, instanceIdChallenge)
+	}
+
+	if instanceIdTest != "" {
+		deleteNamespace(c, clientset, instanceIdTest)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Stopping challenge",
 	})
+}
+
+func deleteNamespace(c *gin.Context, clientset *kubernetes.Clientset, instanceId string) {
+	err := clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(instanceId), metav1.DeleteOptions{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 }
