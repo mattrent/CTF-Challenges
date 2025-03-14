@@ -84,7 +84,8 @@ func main() {
 
 	router.POST("/challenges/:id/publish", auth.RequireDeveloper, handlers.PublishChallenge)
 
-	router.POST("/challenges/:id/verify", auth.RequireDeveloper, handlers.VerifyFlag)
+	// TODO Add authentication to this endpoint, needs to be server-side
+	router.POST("/challenges/:id/verify", handlers.VerifyFlag)
 
 	router.GET("/challenges/:id/verify", auth.RequireDeveloper, handlers.StartTest)
 

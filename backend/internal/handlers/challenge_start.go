@@ -77,7 +77,8 @@ func StartChallenge(c *gin.Context) {
 	}
 
 	testMode := false
-	res, err := createResources(c, userId, challenge.Id, instanceId, token, challenge.Verified, testMode)
+	challengeDomain := getChallengeDomain(instanceId)
+	res, err := createResources(c, userId, &challenge, instanceId, token, challengeDomain, testMode)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -89,9 +90,7 @@ func getChallengeDomain(instanceId string) string {
 	return instanceId[0:18] + config.Values.ChallengeDomain
 }
 
-func createResources(ctx context.Context, userId, challengeId, instanceId, token string, verified bool, testMode bool) (*StartChallengeResponse, error) {
-	challengeDomain := getChallengeDomain(instanceId)
-
+func createResources(ctx context.Context, userId string, challenge *storage.Challenge, instanceId, token string, challengeDomain string, testMode bool) (*StartChallengeResponse, error) {
 	kubeClient, err := infrastructure.CreateClient()
 	if err != nil {
 		return nil, err
@@ -102,23 +101,24 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 
 	var challengeIdLabel string
 	if testMode {
-		challengeIdLabel = "test-" + challengeId
+		challengeIdLabel = "test-" + challenge.Id
 	} else {
-		challengeIdLabel = challengeId
+		challengeIdLabel = challenge.Id
 	}
 
 	ns := infrastructure.BuildNamespace(name, challengeIdLabel, instanceId, userId)
 
 	var mainResource client.Object
 	if useVm := unleash.IsEnabled("use-virtual-machine"); useVm {
-		mainResource = infrastructure.BuildVm(challengeId, token, ns.Name, challengeDomain)
+		mainResource = infrastructure.BuildVm(challenge.Id, userId, token, ns.Name, challengeDomain, testMode)
 	} else {
-		mainResource = infrastructure.BuildContainer(challengeId, token, ns.Name, challengeDomain)
+		mainResource = infrastructure.BuildContainer(challenge.Id, userId, token, ns.Name, challengeDomain, testMode)
 	}
 
 	resources := []client.Object{
 		ns,
 		mainResource,
+		infrastructure.BuildNetworkPolicy(ns),
 	}
 
 	if !testMode {
@@ -126,7 +126,6 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 			infrastructure.BuildHttpService(ns.Name),
 			infrastructure.BuildSshService(ns.Name),
 			infrastructure.BuildHttpIngress(ns.Name, challengeDomain),
-			infrastructure.BuildNetworkPolicy(ns),
 		)
 	}
 
@@ -144,6 +143,6 @@ func createResources(ctx context.Context, userId, challengeId, instanceId, token
 		Url:         challengeDomain,
 		SecondsLeft: int((time.Minute * time.Duration(config.Values.ChallengeLifetimeMinutes)).Seconds()),
 		Started:     true,
-		Verified:    verified,
+		Verified:    challenge.Verified,
 	}, nil
 }

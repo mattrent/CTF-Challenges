@@ -4,8 +4,11 @@ import (
 	"deployer/internal/auth"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
+	"fmt"
 	"net/http"
 	"strconv"
+
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/gin-gonic/gin"
 )
@@ -16,13 +19,30 @@ import (
 // @Tags         challenges
 // @Accept       json
 // @Produce      json
-// @Param        id   path      string  true  "Challenge ID"
-// @Param        flag body      string  true  "Flag to verify"
-// @Success      200  {object}  map[string]string
+// @Param        id      path      string  true  "Challenge ID"
+// @Param        flag    body      string  true  "Flag to verify"
+// @Param        userid  query     string  true  "User ID"
+// @Success      200     {object}  map[string]string
+// @Failure      400     {object}  map[string]string
+// @Failure      500     {object}  map[string]string
 // @Router       /challenges/{id}/verify [post]
 // @Security     BearerAuth
 func VerifyFlag(c *gin.Context) {
 	challengeId := c.Param("id")
+	userId := c.Query(auth.ContextUserIdKey)
+
+	runningIdTest, err := infrastructure.GetRunningInstanceId(c, userId, "test-"+challengeId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	if runningIdTest == "" {
+		c.JSON(http.StatusNotFound, gin.H{
+			"error": "Test is not running",
+		})
+		return
+	}
 
 	var json struct {
 		Flag string `json:"flag" binding:"required"`
@@ -48,10 +68,29 @@ func VerifyFlag(c *gin.Context) {
 		}
 		c.JSON(http.StatusOK, gin.H{"status": "success"})
 	} else {
-		c.JSON(http.StatusUnauthorized, gin.H{"status": "failure"})
+		quotedFlag := fmt.Sprintf("\"%s\"", flag)
+		c.JSON(http.StatusUnauthorized, gin.H{"status": "failure", "submitted-flag": quotedFlag})
 	}
+
+	kubeconfig := infrastructure.GetKubeConfigSingleton()
+	clientset, err := kubernetes.NewForConfig(kubeconfig)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	deleteNamespace(c, clientset, runningIdTest)
 }
 
+// @Summary Start a test for a challenge
+// @Description Start a test for a specific challenge
+// @Tags challenges
+// @Accept json
+// @Produce json
+// @Param id path string true "Challenge ID"
+// @Success 200 {object} handlers.StartTestResponse
+// @Failure 400 {object} handlers.ErrorResponse
+// @Failure 500 {object} handlers.ErrorResponse
+// @Router /challenges/{id}/verify [get]
 func StartTest(c *gin.Context) {
 	userId := auth.GetCurrentUserId(c)
 	challengeId := c.Param("id")
@@ -109,7 +148,8 @@ func StartTest(c *gin.Context) {
 	}
 
 	testMode := true
-	res, err := createResources(c, userId, challenge.Id, instanceId, token, challenge.Verified, testMode)
+	challengeDomain := getChallengeDomain(runningIdChallenge)
+	res, err := createResources(c, userId, &challenge, instanceId, token, challengeDomain, testMode)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

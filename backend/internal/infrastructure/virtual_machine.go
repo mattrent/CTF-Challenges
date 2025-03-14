@@ -19,7 +19,7 @@ const labelName = "custom-challenge-selector"
 // TODO add volume for docker-compose or fix authentication for wget /download endpoint
 // ! Liveness probes basically don't work
 
-func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.Deployment {
+func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, testMode bool) *appsv1.Deployment {
 	const emptydirVolumeName = "emptydir-volume"
 
 	resourceRequirements := corev1.ResourceRequirements{
@@ -33,6 +33,27 @@ func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.
 		},
 	}
 
+	var runCommand []string
+	if testMode {
+		runCommand = []string{
+			fmt.Sprintf(
+				`curl -k -X POST -H "Content-Type: application/json" -d '{"flag":"flag{ssh-example}"}' %s/challenges/%s/verify?userid=%s`,
+				config.Values.BackendUrl,
+				challengeId,
+				userId,
+			),
+			// The same as halting the VM (without restart)
+			"sleep 3600",
+		}
+	} else {
+		runCommand = []string{
+			// Needs to be attached. Container will stop once the command finishes
+			`docker compose -f "/run/challenge/challenge/compose.yaml" up`,
+		}
+	}
+
+	userData := buildContainerInit(challengeId, token, runCommand)
+
 	podSpec := corev1.PodSpec{
 		Containers: []corev1.Container{
 			{
@@ -40,13 +61,10 @@ func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.
 				Name:    "challenge-container",
 				Image:   config.Values.ContainerImageUrl,
 				Command: []string{"/bin/bash"},
+
 				// run in foreground
 				Args: []string{"-c",
-					fmt.Sprintf(`mkdir /run/challenge
-						wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
-						unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
-						docker compose -f "/run/challenge/challenge/compose.yaml" up`,
-						config.Values.BackendUrl, challengeId, token),
+					userData,
 				},
 				Ports: []corev1.ContainerPort{
 					{
@@ -213,10 +231,28 @@ func BuildContainer(challengeId, token, namespace, challengeUrl string) *appsv1.
 	}
 }
 
-func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.VirtualMachine {
+func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMode bool) *kubevirt.VirtualMachine {
 	containerDiskName := "containerdisk"
 	cloudInitDiskName := "cloudinitdisk"
-	userData := buildCloudInit(challengeId, token, challengeUrl)
+
+	var runCommand []string
+	if testMode {
+		runCommand = []string{
+			fmt.Sprintf(
+				`curl -k -X POST -H "Content-Type: application/json" -d '{"flag":"flag{ssh-example}"}' %s/challenges/%s/verify?userid=%s`,
+				config.Values.BackendUrl,
+				challengeId,
+				userId,
+			),
+		}
+	} else {
+		runCommand = []string{
+			// Can be detached. The VM will be stopped won't the container stops
+			"docker compose -f /run/challenge/challenge/compose.yaml up -d",
+		}
+	}
+
+	userData := buildCloudInit(challengeId, token, challengeUrl, runCommand)
 
 	containerDisk := kubevirt.ContainerDiskSource{
 		Image: config.Values.VMImageUrl,
@@ -343,14 +379,14 @@ func BuildVm(challengeId, token, namespace, challengeUrl string) *kubevirt.Virtu
 	}
 }
 
-func buildCloudInit(challengeId, token, challengeUrl string) string {
+func buildCloudInit(challengeId string, token string, challengeUrl string, runCommand []string) string {
 	userData := fmt.Sprintf(`#cloud-config
 runcmd:
 - mkdir /run/challenge
 - wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
 - unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
-- HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s" docker compose -f "/run/challenge/challenge/compose.yaml" up -d
-`, config.Values.BackendUrl, challengeId, token, challengeUrl)
+- HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s" %s
+`, config.Values.BackendUrl, challengeId, token, challengeUrl, strings.Join(runCommand, "\n- "))
 
 	if len(config.Values.VMSSHPUBLICKEY) > 0 {
 		userData += fmt.Sprintf(`
@@ -359,5 +395,14 @@ ssh_authorized_keys:
 `, config.Values.VMSSHPUBLICKEY)
 	}
 
+	return userData
+}
+
+func buildContainerInit(challengeId string, token string, runCommand []string) string {
+	userData := fmt.Sprintf(`sleep 30
+		mkdir /run/challenge
+		wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
+		unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
+		%s`, config.Values.BackendUrl, challengeId, token, strings.Join(runCommand, "\n"))
 	return userData
 }

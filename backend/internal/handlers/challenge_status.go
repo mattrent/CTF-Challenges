@@ -80,7 +80,8 @@ func GetChallengeStatus(c *gin.Context) {
 	}
 
 	for _, status := range pods.Items[0].Status.ContainerStatuses {
-		if status.Name == "compute" {
+		// ? why make so complicated when start endpoint is not
+		if status.Name == "compute" || status.Name == "challenge-container" {
 			c.JSON(http.StatusOK, gin.H{
 				"url":         getChallengeDomain(instanceId),
 				"ready":       status.Ready,
