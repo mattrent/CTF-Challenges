@@ -38,6 +38,13 @@ func UpdateChallenge(c *gin.Context) {
 		return
 	}
 
+	if challenge.Published {
+		c.JSON(http.StatusForbidden, gin.H{
+			"message": "Challenge is published. You cannot update a playable challenge.",
+		})
+		return
+	}
+
 	// Replace challenge files
 	dst := filepath.Join(config.Values.UploadPath, challengeId)
 	err = os.RemoveAll(dst)
@@ -71,6 +78,12 @@ func UpdateChallenge(c *gin.Context) {
 
 	challengeFile := filepath.Join(dst, "challenge.yml")
 	err = storage.UpdateChallengeFlagGivenChallengeFile(challengeFile, challengeId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = storage.ResetChallengeVerified(challengeId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

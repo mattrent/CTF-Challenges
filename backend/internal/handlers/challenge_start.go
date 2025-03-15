@@ -8,7 +8,6 @@ import (
 	"deployer/internal/storage"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/Unleash/unleash-client-go/v4"
@@ -36,19 +35,10 @@ func StartChallenge(c *gin.Context) {
 	userId := auth.GetCurrentUserId(c)
 	challengeId := c.Param("id")
 
-	var challenge storage.Challenge
-	if id, err := strconv.Atoi(challengeId); err == nil {
-		challenge, err = storage.GetChallengeByCtfdId(id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "CTFd challenge not found"})
-			return
-		}
-	} else {
-		challenge, err = storage.GetChallenge(challengeId)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Challenge not found"})
-			return
-		}
+	challenge, err := storage.GetChallengeWrapper(challengeId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
 	}
 
 	if challenge.UserId != userId && !challenge.Published && !auth.IsAdmin(c) {
@@ -56,7 +46,7 @@ func StartChallenge(c *gin.Context) {
 		return
 	}
 
-	runningId, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
+	runningId, err := infrastructure.GetRunningChallengeInstanceId(c, userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -96,17 +86,7 @@ func createResources(ctx context.Context, userId string, challenge *storage.Chal
 		return nil, err
 	}
 
-	// Create resources
-	name := infrastructure.GetNamespaceName(instanceId)
-
-	var challengeIdLabel string
-	if testMode {
-		challengeIdLabel = "test-" + challenge.Id
-	} else {
-		challengeIdLabel = challenge.Id
-	}
-
-	ns := infrastructure.BuildNamespace(name, challengeIdLabel, instanceId, userId)
+	ns := infrastructure.BuildNamespace(challenge.Id, instanceId, userId, testMode)
 
 	var mainResource client.Object
 	if useVm := unleash.IsEnabled("use-virtual-machine"); useVm {

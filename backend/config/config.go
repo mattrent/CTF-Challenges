@@ -42,6 +42,7 @@ type Config struct {
 	IngressHttpAnnotations   Annotations
 	JwksUrl                  string
 	RootCert                 string
+	MaxConcurrentTests       int
 	ImagePullSecret          string
 	Unleash                  UnleashConfig
 	ChallengeReadinessProbe  KubernetesProbeConfig

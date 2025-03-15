@@ -5,7 +5,6 @@ import (
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -24,28 +23,19 @@ func StopChallenge(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := auth.GetCurrentUserId(c)
 
-	var challenge storage.Challenge
-	if id, err := strconv.Atoi(challengeId); err == nil {
-		challenge, err = storage.GetChallengeByCtfdId(id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "CTFd challenge not found"})
-			return
-		}
-	} else {
-		challenge, err = storage.GetChallenge(challengeId)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Challenge not found"})
-			return
-		}
+	challenge, err := storage.GetChallengeWrapper(challengeId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
 	}
 
-	instanceIdChallenge, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
+	instanceIdChallenge, err := infrastructure.GetRunningChallengeInstanceId(c, userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	instanceIdTest, err := infrastructure.GetRunningInstanceId(c, userId, "test-"+challenge.Id)
+	instanceIdTest, err := infrastructure.GetRunningTestInstanceId(c, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -56,19 +46,12 @@ func StopChallenge(c *gin.Context) {
 		return
 	}
 
-	kubeconfig := infrastructure.GetKubeConfigSingleton()
-	clientset, err := kubernetes.NewForConfig(kubeconfig)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
 	if instanceIdChallenge != "" {
-		deleteNamespace(c, clientset, instanceIdChallenge)
+		deleteNamespace(c, instanceIdChallenge, infrastructure.GetNamespaceNameChallenge)
 	}
 
 	if instanceIdTest != "" {
-		deleteNamespace(c, clientset, instanceIdTest)
+		deleteNamespace(c, instanceIdTest, infrastructure.GetNamespaceNameTest)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -76,8 +59,15 @@ func StopChallenge(c *gin.Context) {
 	})
 }
 
-func deleteNamespace(c *gin.Context, clientset *kubernetes.Clientset, instanceId string) {
-	err := clientset.CoreV1().Namespaces().Delete(c, infrastructure.GetNamespaceName(instanceId), metav1.DeleteOptions{})
+func deleteNamespace(c *gin.Context, instanceId string, getNameSpace func(string) string) {
+	kubeconfig := infrastructure.GetKubeConfigSingleton()
+	clientset, err := kubernetes.NewForConfig(kubeconfig)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	err = clientset.CoreV1().Namespaces().Delete(c, getNameSpace(instanceId), metav1.DeleteOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

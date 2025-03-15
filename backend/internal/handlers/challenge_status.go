@@ -7,7 +7,6 @@ import (
 	"deployer/internal/storage"
 	"log"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -27,22 +26,13 @@ func GetChallengeStatus(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := auth.GetCurrentUserId(c)
 
-	var challenge storage.Challenge
-	if id, err := strconv.Atoi(challengeId); err == nil {
-		challenge, err = storage.GetChallengeByCtfdId(id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "CTFd challenge not found"})
-			return
-		}
-	} else {
-		challenge, err = storage.GetChallenge(challengeId)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Challenge not found"})
-			return
-		}
+	challenge, err := storage.GetChallengeWrapper(challengeId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
 	}
 
-	instanceId, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
+	instanceId, err := infrastructure.GetRunningChallengeInstanceId(c, userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -63,7 +53,7 @@ func GetChallengeStatus(c *gin.Context) {
 		return
 	}
 
-	namespace := infrastructure.GetNamespaceName(instanceId)
+	namespace := infrastructure.GetNamespaceNameChallenge(instanceId)
 	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

@@ -13,6 +13,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 )
 
+// @Summary Get challenge logs
+// @Description Returns the logs of a challenge
+// @Tags challenges
+// @Security BearerAuth
+// @Param id path string true "Challenge ID"
+// @Success 200 {string} string "Logs"
+// @Failure 401 {object} handlers.ErrorResponse
+// @Router /challenges/{id}/logs [get]
 func GetChallengeLogs(c *gin.Context) {
 	challengeId := c.Param("id")
 	userId := auth.GetCurrentUserId(c)
@@ -27,7 +35,7 @@ func GetChallengeLogs(c *gin.Context) {
 		return
 	}
 
-	instanceId, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
+	instanceId, err := infrastructure.GetRunningChallengeInstanceId(c, userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -44,13 +52,14 @@ func GetChallengeLogs(c *gin.Context) {
 		return
 	}
 
-	namespace := infrastructure.GetNamespaceName(instanceId)
+	namespace := infrastructure.GetNamespaceNameChallenge(instanceId)
 	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
+	// TODO check if this works with containers
 	req := clientset.CoreV1().Pods(namespace).GetLogs(pods.Items[0].Name, &corev1.PodLogOptions{Container: "guest-console-log"})
 	logReader, err := req.Stream(c)
 	if err != nil {

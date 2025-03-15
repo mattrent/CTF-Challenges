@@ -1,37 +1,30 @@
 package handlers
 
 import (
+	"deployer/config"
 	"deployer/internal/auth"
 	"deployer/internal/infrastructure"
 	"deployer/internal/storage"
 	"fmt"
 	"net/http"
-	"strconv"
-
-	"k8s.io/client-go/kubernetes"
 
 	"github.com/gin-gonic/gin"
 )
 
-// VerifyFlag godoc
-// @Summary      Verify Challenge Flag
-// @Description  Verifies the flag for the given challenge ID.
-// @Tags         challenges
-// @Accept       json
-// @Produce      json
-// @Param        id      path      string  true  "Challenge ID"
-// @Param        flag    body      string  true  "Flag to verify"
-// @Param        userid  query     string  true  "User ID"
-// @Success      200     {object}  map[string]string
-// @Failure      400     {object}  map[string]string
-// @Failure      500     {object}  map[string]string
-// @Router       /challenges/{id}/verify [post]
-// @Security     BearerAuth
+// @Summary Verify a challenge flag
+// @Description Verifies the flag for a challenge
+// @Tags challenges
+// @Accept json
+// @Produce json
+// @Param id path string true "Challenge ID"
+// @Param flag body handlers.FlagRequest true "Flag request"
+// @Success 200 {object} handlers.FlagResponse
+// @Failure 400 {object} handlers.ErrorResponse
+// @Router /challenges/{id}/verify [post]
 func VerifyFlag(c *gin.Context) {
 	challengeId := c.Param("id")
-	userId := c.Query(auth.ContextUserIdKey)
 
-	runningIdTest, err := infrastructure.GetRunningInstanceId(c, userId, "test-"+challengeId)
+	runningIdTest, err := infrastructure.GetRunningTestInstanceId(c, challengeId)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -72,42 +65,25 @@ func VerifyFlag(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, gin.H{"status": "failure", "submitted-flag": quotedFlag})
 	}
 
-	kubeconfig := infrastructure.GetKubeConfigSingleton()
-	clientset, err := kubernetes.NewForConfig(kubeconfig)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-	deleteNamespace(c, clientset, runningIdTest)
+	deleteNamespace(c, runningIdTest, infrastructure.GetNamespaceNameTest)
 }
 
 // @Summary Start a test for a challenge
-// @Description Start a test for a specific challenge
+// @Description Starts a test for a challenge
 // @Tags challenges
-// @Accept json
-// @Produce json
+// @Security BearerAuth
 // @Param id path string true "Challenge ID"
-// @Success 200 {object} handlers.StartTestResponse
-// @Failure 400 {object} handlers.ErrorResponse
-// @Failure 500 {object} handlers.ErrorResponse
+// @Success 200 {object} handlers.TestResponse
+// @Failure 401 {object} handlers.ErrorResponse
 // @Router /challenges/{id}/verify [get]
 func StartTest(c *gin.Context) {
 	userId := auth.GetCurrentUserId(c)
 	challengeId := c.Param("id")
 
-	var challenge storage.Challenge
-	if id, err := strconv.Atoi(challengeId); err == nil {
-		challenge, err = storage.GetChallengeByCtfdId(id)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "CTFd challenge not found"})
-			return
-		}
-	} else {
-		challenge, err = storage.GetChallenge(challengeId)
-		if err != nil {
-			c.JSON(http.StatusNotFound, gin.H{"message": "Challenge not found"})
-			return
-		}
+	challenge, err := storage.GetChallengeWrapper(challengeId)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
 	}
 
 	if challenge.UserId != userId && !auth.IsAdmin(c) {
@@ -115,13 +91,13 @@ func StartTest(c *gin.Context) {
 		return
 	}
 
-	runningIdChallenge, err := infrastructure.GetRunningInstanceId(c, userId, challenge.Id)
+	runningIdChallenge, err := infrastructure.GetRunningChallengeInstanceId(c, userId, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	runningIdTest, err := infrastructure.GetRunningInstanceId(c, userId, "test-"+challenge.Id)
+	runningIdTest, err := infrastructure.GetRunningTestInstanceId(c, challenge.Id)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
@@ -138,6 +114,17 @@ func StartTest(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"started": true,
 		})
+		return
+	}
+
+	nsList, err := infrastructure.TestNameSpacesForUserId(c, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	// Only admin can exceed this value
+	if !auth.IsAdmin(c) && len(nsList.Items) >= config.Values.MaxConcurrentTests {
+		c.JSON(http.StatusTooManyRequests, gin.H{"error": "Too many tests running"})
 		return
 	}
 

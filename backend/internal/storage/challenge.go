@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"os"
+	"strconv"
 
 	"gopkg.in/yaml.v2"
 )
@@ -54,6 +55,23 @@ func UpdateChallengeFlag(challengeId string, flag string) error {
 	return err
 }
 
+func GetChallengeWrapper(challengeId string) (Challenge, error) {
+	var challenge Challenge
+	if id, err := strconv.Atoi(challengeId); err == nil {
+		challenge, err = GetChallengeByCtfdId(id)
+		if err != nil {
+			return Challenge{}, fmt.Errorf("CTFd challenge not found")
+		}
+	} else {
+		challenge, err = GetChallenge(challengeId)
+		if err != nil {
+			return Challenge{}, fmt.Errorf("Challenge not found")
+		}
+	}
+
+	return challenge, nil
+}
+
 func GetChallengeFlag(challengeId string) (string, error) {
 	var expectedFlag string
 	err := Db.QueryRow("SELECT flag FROM challenges WHERE id=$1;", challengeId).Scan(&expectedFlag)
@@ -65,6 +83,11 @@ func GetChallengeFlag(challengeId string) (string, error) {
 
 func MarkChallengeVerified(challengeId string) error {
 	_, err := Db.Exec("UPDATE challenges SET verified=$1 WHERE id=$2", true, challengeId)
+	return err
+}
+
+func ResetChallengeVerified(challengeId string) error {
+	_, err := Db.Exec("UPDATE challenges SET verified=$1 WHERE id=$2", false, challengeId)
 	return err
 }
 
@@ -83,6 +106,7 @@ func ParseChallengeYAML(filePath string) (Config, error) {
 	return config, nil
 }
 
+// ! Only support challenges with a single flag
 func UpdateChallengeFlagGivenChallengeFile(filePath string, challengeId string) error {
 	config, err := ParseChallengeYAML(filePath)
 	if err != nil {

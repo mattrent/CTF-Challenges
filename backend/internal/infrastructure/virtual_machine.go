@@ -36,11 +36,12 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 	var runCommand []string
 	if testMode {
 		runCommand = []string{
+			"docker build /run/challenge/challenge/ -f /run/challenge/challenge/ -t test",
+			"docker run -it test",
 			fmt.Sprintf(
-				`curl -k -X POST -H "Content-Type: application/json" -d '{"flag":"flag{ssh-example}"}' %s/challenges/%s/verify?userid=%s`,
+				`curl -k -X POST -H "Content-Type: application/json" -d '{"flag":"flag{ssh-example}"}' %s/challenges/%s/verify`,
 				config.Values.BackendUrl,
 				challengeId,
-				userId,
 			),
 			// The same as halting the VM (without restart)
 			"sleep 3600",
@@ -238,11 +239,12 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 	var runCommand []string
 	if testMode {
 		runCommand = []string{
+			"docker build /run/challenge/challenge/ -f /run/challenge/challenge/ -t test",
+			"docker run test",
 			fmt.Sprintf(
-				`curl -k -X POST -H "Content-Type: application/json" -d '{"flag":"flag{ssh-example}"}' %s/challenges/%s/verify?userid=%s`,
+				`curl -k -X POST -H "Content-Type: application/json" -d '{"flag":"flag{ssh-example}"}' %s/challenges/%s/verify`,
 				config.Values.BackendUrl,
 				challengeId,
-				userId,
 			),
 		}
 	} else {
@@ -385,8 +387,8 @@ runcmd:
 - mkdir /run/challenge
 - wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
 - unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
-- HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s" %s
-`, config.Values.BackendUrl, challengeId, token, challengeUrl, strings.Join(runCommand, "\n- "))
+- HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s"
+- %s`, config.Values.BackendUrl, challengeId, token, challengeUrl, strings.Join(runCommand, "\n- "))
 
 	if len(config.Values.VMSSHPUBLICKEY) > 0 {
 		userData += fmt.Sprintf(`
