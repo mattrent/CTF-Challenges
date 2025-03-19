@@ -20,7 +20,8 @@ const labelName = "custom-challenge-selector"
 // ! Liveness probes basically don't work
 
 func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, testMode bool) *appsv1.Deployment {
-	const emptydirVolumeName = "emptydir-volume"
+	const emptydirDocker = "emptydir-docker"
+	const emptydirFlag = "emptydir-flag"
 
 	resourceRequirements := corev1.ResourceRequirements{
 		Limits: corev1.ResourceList{
@@ -36,10 +37,11 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 	var runCommand []string
 	if testMode {
 		runCommand = []string{
-			"docker build /run/challenge/challenge/ -f /run/challenge/challenge/ -t test",
-			"docker run -it test",
+			"docker build /run/challenge/challenge/ -f /run/challenge/challenge/Dockerfile -t test",
+			"docker run -it -e HTTP_PORT -e SSH_PORT -e DOMAIN -v /run/solution:/run/solution test",
+			"FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]')",
 			fmt.Sprintf(
-				`curl -k -X POST -H "Content-Type: application/json" -d '{"flag":"flag{ssh-example}"}' %s/challenges/%s/verify`,
+				`curl -k -X POST -H "Content-Type: application/json" -d "{\"flag\":\"$FLAG\"}" %s/challenges/%s/verify`,
 				config.Values.BackendUrl,
 				challengeId,
 			),
@@ -104,8 +106,14 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 				},
 				VolumeMounts: []corev1.VolumeMount{
 					{
-						Name:      emptydirVolumeName,
+						Name:      emptydirDocker,
 						MountPath: "/var/run/docker-certs",
+						ReadOnly:  true,
+					},
+					// For the flag
+					{
+						Name:      emptydirFlag,
+						MountPath: "/run/solution",
 						ReadOnly:  true,
 					},
 				},
@@ -167,8 +175,12 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 				},
 				VolumeMounts: []corev1.VolumeMount{
 					{
-						Name:      emptydirVolumeName,
+						Name:      emptydirDocker,
 						MountPath: "/certs/client",
+					},
+					{
+						Name:      emptydirFlag,
+						MountPath: "/run/solution",
 					},
 				},
 				Resources: resourceRequirements,
@@ -188,7 +200,13 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 		},
 		Volumes: []corev1.Volume{
 			{
-				Name: emptydirVolumeName,
+				Name: emptydirDocker,
+				VolumeSource: corev1.VolumeSource{
+					EmptyDir: &corev1.EmptyDirVolumeSource{},
+				},
+			},
+			{
+				Name: emptydirFlag,
 				VolumeSource: corev1.VolumeSource{
 					EmptyDir: &corev1.EmptyDirVolumeSource{},
 				},
@@ -239,10 +257,14 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 	var runCommand []string
 	if testMode {
 		runCommand = []string{
-			"docker build /run/challenge/challenge/ -f /run/challenge/challenge/ -t test",
-			"docker run test",
+			"docker build /run/challenge/challenge/ -f /run/challenge/challenge/Dockerfile -t test",
 			fmt.Sprintf(
-				`curl -k -X POST -H "Content-Type: application/json" -d '{"flag":"flag{ssh-example}"}' %s/challenges/%s/verify`,
+				`docker run -it -e HTTP_PORT=8080 -e SSH_PORT=8022 -e DOMAIN="%s" test`,
+				challengeUrl,
+			),
+			"FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]')",
+			fmt.Sprintf(
+				`wget --no-check-certificate --header="Content-Type: application/json" --post-data="{\"flag\":\"$FLAG\"}" %s/challenges/%s/verify`,
 				config.Values.BackendUrl,
 				challengeId,
 			),
@@ -250,11 +272,14 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 	} else {
 		runCommand = []string{
 			// Can be detached. The VM will be stopped won't the container stops
-			"docker compose -f /run/challenge/challenge/compose.yaml up -d",
+			fmt.Sprintf(
+				`HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s" docker compose -f /run/challenge/challenge/compose.yaml up -d`,
+				challengeUrl,
+			),
 		}
 	}
 
-	userData := buildCloudInit(challengeId, token, challengeUrl, runCommand)
+	userData := buildCloudInit(challengeId, token, runCommand)
 
 	containerDisk := kubevirt.ContainerDiskSource{
 		Image: config.Values.VMImageUrl,
@@ -381,14 +406,13 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 	}
 }
 
-func buildCloudInit(challengeId string, token string, challengeUrl string, runCommand []string) string {
+func buildCloudInit(challengeId string, token string, runCommand []string) string {
 	userData := fmt.Sprintf(`#cloud-config
 runcmd:
 - mkdir /run/challenge
 - wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
 - unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
-- HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s"
-- %s`, config.Values.BackendUrl, challengeId, token, challengeUrl, strings.Join(runCommand, "\n- "))
+- %s`, config.Values.BackendUrl, challengeId, token, strings.Join(runCommand, "\n- "))
 
 	if len(config.Values.VMSSHPUBLICKEY) > 0 {
 		userData += fmt.Sprintf(`
@@ -402,9 +426,9 @@ ssh_authorized_keys:
 
 func buildContainerInit(challengeId string, token string, runCommand []string) string {
 	userData := fmt.Sprintf(`sleep 30
-		mkdir /run/challenge
-		wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
-		unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
-		%s`, config.Values.BackendUrl, challengeId, token, strings.Join(runCommand, "\n"))
+mkdir /run/challenge
+wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
+unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
+%s`, config.Values.BackendUrl, challengeId, token, strings.Join(runCommand, "\n"))
 	return userData
 }

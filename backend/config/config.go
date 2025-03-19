@@ -31,6 +31,7 @@ type Config struct {
 	VMCPUs                   uint32
 	VMSSHPUBLICKEY           string
 	ChallengeLifetimeMinutes int
+	TestLifetimeMinutes      int
 	BackendUrl               string
 	ChallengeDomain          string
 	VMImageUrl               string
