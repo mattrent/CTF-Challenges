@@ -18,7 +18,7 @@ import (
 // @Tags         challenges
 // @Accept       mpfd
 // @Produce      json
-// @Param upload[] formData []file true "files" collectionFormat(multi)
+// @Param upload[] formData []file true "Allowed filenames: challenge.yml, challenge.zip, handout.zip, solution.zip" collectionFormat(multi)
 // @Router       /challenges [post]
 // @Security BearerAuth
 func AddChallenge(c *gin.Context) {
@@ -42,7 +42,7 @@ func AddChallenge(c *gin.Context) {
 	}
 
 	for _, file := range files {
-		allowedFilenames := []string{"challenge.yml", "challenge.zip", "handout.zip"}
+		allowedFilenames := []string{"challenge.yml", "challenge.zip", "handout.zip", "solution.zip"}
 		if !slices.Contains(allowedFilenames, file.Filename) {
 			c.JSON(http.StatusBadRequest, "invalid filename")
 			return

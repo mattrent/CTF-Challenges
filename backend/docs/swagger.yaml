@@ -1,10 +1,34 @@
 definitions:
+  handlers.ErrorResponse:
+    properties:
+      error:
+        type: string
+    type: object
+  handlers.FlagRequest:
+    properties:
+      flag:
+        type: string
+    required:
+    - flag
+    type: object
+  handlers.FlagResponse:
+    properties:
+      status:
+        type: string
+    type: object
   handlers.LoginRequest:
     properties:
       password:
         type: string
       username:
         type: string
+    type: object
+  handlers.TestResponse:
+    properties:
+      started:
+        type: boolean
+      verified:
+        type: boolean
     type: object
 info:
   contact: {}
@@ -26,7 +50,8 @@ paths:
       - multipart/form-data
       parameters:
       - collectionFormat: multi
-        description: files
+        description: 'Allowed filenames: challenge.yml, challenge.zip, handout.zip,
+          solution.zip'
         in: formData
         items:
           type: file
@@ -69,7 +94,8 @@ paths:
         required: true
         type: string
       - collectionFormat: multi
-        description: files
+        description: 'Allowed filenames: challenge.yml, challenge.zip, handout.zip,
+          solution.zip'
         in: formData
         items:
           type: file
@@ -82,6 +108,59 @@ paths:
       security:
       - BearerAuth: []
       summary: Challenge Update
+      tags:
+      - challenges
+  /challenges/{id}/download:
+    get:
+      description: Downloads a challenge
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Token
+        in: query
+        name: token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Challenge file
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: File not found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Download challenge
+      tags:
+      - challenges
+  /challenges/{id}/logs:
+    get:
+      description: Returns the logs of a challenge
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Logs
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get challenge logs
       tags:
       - challenges
   /challenges/{id}/publish:
@@ -156,6 +235,108 @@ paths:
       summary: Challenge Stop
       tags:
       - challenges
+  /solutions/{id}/download:
+    get:
+      description: Downloads a solution
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Token
+        in: query
+        name: token
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Challenge file
+          schema:
+            type: file
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+        "404":
+          description: File not found
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Download solution
+      tags:
+      - solutions
+  /solutions/{id}/start:
+    post:
+      description: Starts a test for a challenge
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.TestResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Start a test for a challenge
+      tags:
+      - solutions
+  /solutions/{id}/stop:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses: {}
+      security:
+      - BearerAuth: []
+      summary: Solution Stop
+      tags:
+      - solutions
+  /solutions/{id}/verify:
+    post:
+      consumes:
+      - application/json
+      description: Verifies the flag for a challenge
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Flag request
+        in: body
+        name: flag
+        required: true
+        schema:
+          $ref: '#/definitions/handlers.FlagRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handlers.FlagResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      summary: Verify a challenge flag
+      tags:
+      - solutions
   /users/login:
     post:
       consumes:

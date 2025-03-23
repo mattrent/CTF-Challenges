@@ -17,23 +17,51 @@ type Challenge struct {
 	Verified  bool          `json:"verified"`
 }
 
-type Config struct {
-	Name        string   `yaml:"name"`
-	Author      string   `yaml:"author"`
-	Category    string   `yaml:"category"`
-	Description string   `yaml:"description"`
-	Type        string   `yaml:"type"`
-	Extra       Extra    `yaml:"extra"`
-	Solution    string   `yaml:"solution"`
-	Flags       []string `yaml:"flags"`
+type ChallengeCtfd struct {
+	Name           string        `json:"name"`
+	Author         string        `json:"author"`
+	Category       string        `json:"category"`
+	Description    string        `json:"description"`
+	Value          int           `json:"value"`
+	Type           string        `json:"type"`
+	Extra          *Extra        `json:"extra"`
+	Image          interface{}   `json:"image"`
+	Protocol       interface{}   `json:"protocol"`
+	Host           interface{}   `json:"host"`
+	ConnectionInfo string        `json:"connection_info"`
+	Healthcheck    string        `json:"healthcheck"`
+	Attempts       int           `json:"attempts"`
+	Flags          []string      `json:"flags"`
+	Topics         []string      `json:"topics"`
+	Tags           []string      `json:"tags"`
+	Files          []string      `json:"files"`
+	Hints          []HintElement `json:"hints"`
+	Requirements   []string      `json:"requirements"`
+	State          string        `json:"state"`
+	Version        string        `json:"version"`
 }
 
-// Define a struct for the "extra" field
 type Extra struct {
-	Function string `yaml:"function"`
-	Initial  int    `yaml:"initial"`
-	Decay    int    `yaml:"decay"`
-	Minimum  int    `yaml:"minimum"`
+	Initial  int    `json:"initial"`
+	Decay    int    `json:"decay"`
+	Minimum  int    `json:"minimum"`
+	Function string `json:"function"`
+}
+
+type FlagClass struct {
+	Type    string  `json:"type"`
+	Content string  `json:"content"`
+	Data    *string `json:"data,omitempty"`
+}
+
+type HintClass struct {
+	Content string `json:"content"`
+	Cost    int    `json:"cost"`
+}
+
+type HintElement struct {
+	HintClass *HintClass
+	String    *string
 }
 
 func GetChallenge(challengeId string) (Challenge, error) {
@@ -91,16 +119,16 @@ func ResetChallengeVerified(challengeId string) error {
 	return err
 }
 
-func ParseChallengeYAML(filePath string) (Config, error) {
+func ParseChallengeYAML(filePath string) (ChallengeCtfd, error) {
 	fileContent, err := os.ReadFile(filePath)
 	if err != nil {
-		return Config{}, fmt.Errorf("error reading file: %v", err)
+		return ChallengeCtfd{}, fmt.Errorf("error reading file: %v", err)
 	}
 
-	var config Config
+	var config ChallengeCtfd
 	err = yaml.Unmarshal(fileContent, &config)
 	if err != nil {
-		return Config{}, fmt.Errorf("error parsing YAML: %v", err)
+		return ChallengeCtfd{}, fmt.Errorf("error parsing YAML: %v", err)
 	}
 
 	return config, nil

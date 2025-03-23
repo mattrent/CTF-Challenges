@@ -35,23 +35,36 @@ func StopChallenge(c *gin.Context) {
 		return
 	}
 
-	instanceIdTest, err := infrastructure.GetRunningTestInstanceId(c, challenge.Id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+	var instanceIdTest string
+	if challenge.UserId == userId {
+		instanceIdTest, err = infrastructure.GetRunningTestInstanceId(c, challenge.Id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	} else {
+		instanceIdTest = ""
 	}
 
 	if instanceIdChallenge == "" && instanceIdTest == "" {
-		c.JSON(http.StatusNotFound, gin.H{"message": "Challenge instance not running"})
+		c.JSON(http.StatusNotFound, gin.H{"message": "Challenge and Test instance are not running"})
 		return
 	}
 
 	if instanceIdChallenge != "" {
-		deleteNamespace(c, instanceIdChallenge, infrastructure.GetNamespaceNameChallenge)
+		err = deleteNamespace(c, instanceIdChallenge, infrastructure.GetNamespaceNameChallenge)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	if instanceIdTest != "" {
-		deleteNamespace(c, instanceIdTest, infrastructure.GetNamespaceNameTest)
+		err = deleteNamespace(c, instanceIdTest, infrastructure.GetNamespaceNameTest)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -59,17 +72,16 @@ func StopChallenge(c *gin.Context) {
 	})
 }
 
-func deleteNamespace(c *gin.Context, instanceId string, getNameSpace func(string) string) {
+func deleteNamespace(c *gin.Context, instanceId string, getNameSpace func(string) string) error {
 	kubeconfig := infrastructure.GetKubeConfigSingleton()
 	clientset, err := kubernetes.NewForConfig(kubeconfig)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return err
 	}
 
 	err = clientset.CoreV1().Namespaces().Delete(c, getNameSpace(instanceId), metav1.DeleteOptions{})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return err
 	}
+	return nil
 }

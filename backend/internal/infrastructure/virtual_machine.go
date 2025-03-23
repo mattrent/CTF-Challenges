@@ -37,27 +37,41 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 	var runCommand []string
 	if testMode {
 		runCommand = []string{
-			"docker build /run/challenge/challenge/ -f /run/challenge/challenge/Dockerfile -t test",
-			"docker run --name test_container -e HTTP_PORT -e SSH_PORT -e DOMAIN -v /run/solution:/run/solution test",
-			// No TTY
-			"docker wait test_container",
+			"mkdir /run/test",
+			fmt.Sprintf(
+				`wget --no-check-certificate -O "/run/test/solution.zip" "%s/solutions/%s/download?token=%s"`,
+				config.Values.BackendUrl,
+				challengeId,
+				token,
+			),
+			`unzip -d "/run/test/solution/" "/run/test/solution.zip"`,
+			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test",
+			"docker run -e HTTP_PORT -e SSH_PORT -e DOMAIN -v /run/solution:/run/solution test",
 			"FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]')",
 			fmt.Sprintf(
-				`curl -k -X POST -d "{\"flag\":\"$FLAG\"}" %s/challenges/%s/verify`,
+				`curl -k -X POST -d "{\"flag\":\"$FLAG\"}" %s/solutions/%s/verify`,
 				config.Values.BackendUrl,
 				challengeId,
 			),
 			// The same as halting the VM (without restart)
-			"sleep 3600",
+			"sleep 36000",
 		}
 	} else {
 		runCommand = []string{
+			"mkdir /run/challenge",
+			fmt.Sprintf(
+				`wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"`,
+				config.Values.BackendUrl,
+				challengeId,
+				token,
+			),
+			`unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"`,
 			// Needs to be attached. Container will stop once the command finishes
 			`docker compose -f "/run/challenge/challenge/compose.yaml" up`,
 		}
 	}
 
-	userData := buildContainerInit(challengeId, token, runCommand)
+	userData := buildContainerInit(runCommand)
 
 	container := corev1.Container{
 		// https://www.jenkins.io/doc/book/installing/docker/
@@ -262,20 +276,35 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 	var runCommand []string
 	if testMode {
 		runCommand = []string{
-			"docker build /run/challenge/challenge/ -f /run/challenge/challenge/Dockerfile -t test",
+			"mkdir /run/test",
 			fmt.Sprintf(
-				`docker run --name test_container -e HTTP_PORT=8080 -e SSH_PORT=8022 -e DOMAIN="%s" -v /run/solution:/run/solution test`,
+				`wget --no-check-certificate -O "/run/test/solution.zip" "%s/solutions/%s/download?token=%s"`,
+				config.Values.BackendUrl,
+				challengeId,
+				token,
+			),
+			`unzip -d "/run/test/solution/" "/run/test/solution.zip"`,
+			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test",
+			fmt.Sprintf(
+				`docker run -e HTTP_PORT=8080 -e SSH_PORT=8022 -e DOMAIN="%s" -v /run/solution:/run/solution test`,
 				challengeUrl,
 			),
-			"docker wait test_container",
 			fmt.Sprintf(
-				`FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]') && wget --no-check-certificate --post-data="{\"flag\":\"$FLAG\"}" "%s/challenges/%s/verify"`,
+				`FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]') && wget --no-check-certificate --post-data="{\"flag\":\"$FLAG\"}" "%s/solutions/%s/verify"`,
 				config.Values.BackendUrl,
 				challengeId,
 			),
 		}
 	} else {
 		runCommand = []string{
+			"mkdir /run/challenge",
+			fmt.Sprintf(
+				`wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"`,
+				config.Values.BackendUrl,
+				challengeId,
+				token,
+			),
+			`unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"`,
 			// Can be detached. The VM will be stopped won't the container stops
 			fmt.Sprintf(
 				`HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s" docker compose -f /run/challenge/challenge/compose.yaml up -d`,
@@ -284,7 +313,7 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 		}
 	}
 
-	userData := buildCloudInit(challengeId, token, runCommand)
+	userData := buildCloudInit(runCommand)
 
 	containerDisk := kubevirt.ContainerDiskSource{
 		Image: config.Values.VMImageUrl,
@@ -417,14 +446,10 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 	return vm
 }
 
-func buildCloudInit(challengeId string, token string, runCommand []string) string {
+func buildCloudInit(runCommand []string) string {
 	userData := fmt.Sprintf(`#cloud-config
 runcmd:
-- echo "test"
-- mkdir /run/challenge
-- wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
-- unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
-- %s`, config.Values.BackendUrl, challengeId, token, strings.Join(runCommand, "\n- "))
+- %s`, strings.Join(runCommand, "\n- "))
 
 	if len(config.Values.VMSSHPUBLICKEY) > 0 {
 		userData += fmt.Sprintf(`
@@ -436,11 +461,8 @@ ssh_authorized_keys:
 	return userData
 }
 
-func buildContainerInit(challengeId string, token string, runCommand []string) string {
+func buildContainerInit(runCommand []string) string {
 	userData := fmt.Sprintf(`sleep 30
-mkdir /run/challenge
-wget --no-check-certificate -O "/run/challenge/challenge.zip" "%s/challenges/%s/download?token=%s"
-unzip -d "/run/challenge/challenge/" "/run/challenge/challenge.zip"
-%s`, config.Values.BackendUrl, challengeId, token, strings.Join(runCommand, "\n"))
+%s`, strings.Join(runCommand, "\n"))
 	return userData
 }

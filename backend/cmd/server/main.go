@@ -85,9 +85,13 @@ func main() {
 	router.POST("/challenges/:id/publish", auth.RequireDeveloper, handlers.PublishChallenge)
 
 	// TODO Add authentication to this endpoint, needs to be server-side
-	router.POST("/challenges/:id/verify", handlers.VerifyFlag)
+	router.POST("/solutions/:id/verify", handlers.VerifyFlag)
 
-	router.GET("/challenges/:id/verify", auth.RequireDeveloper, handlers.StartTest)
+	router.POST("/solutions/:id/start", auth.RequireDeveloper, handlers.StartTest)
+
+	router.GET("/solutions/:id/download", handlers.DownloadSolution)
+
+	router.POST("/solutions/:id/stop", auth.RequireDeveloper, handlers.StopTest)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
