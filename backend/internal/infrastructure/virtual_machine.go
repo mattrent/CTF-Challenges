@@ -22,6 +22,7 @@ const labelName = "custom-challenge-selector"
 func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, testMode bool) *appsv1.Deployment {
 	const emptydirDocker = "emptydir-docker"
 	const emptydirFlag = "emptydir-flag"
+	const emptydirCode = "emptydir-code"
 
 	resourceRequirements := corev1.ResourceRequirements{
 		Limits: corev1.ResourceList{
@@ -35,7 +36,9 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 	}
 
 	var runCommand []string
+	var codeFolder string
 	if testMode {
+		codeFolder = "/run/test"
 		runCommand = []string{
 			"mkdir /run/test",
 			fmt.Sprintf(
@@ -57,6 +60,7 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 			"sleep 36000",
 		}
 	} else {
+		codeFolder = "/run/challenge"
 		runCommand = []string{
 			"mkdir /run/challenge",
 			fmt.Sprintf(
@@ -128,6 +132,11 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 				MountPath: "/run/solution",
 				ReadOnly:  true,
 			},
+			{
+				Name:      emptydirCode,
+				MountPath: codeFolder,
+				ReadOnly:  false,
+			},
 		},
 		Resources: resourceRequirements,
 	}
@@ -195,10 +204,17 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 					{
 						Name:      emptydirDocker,
 						MountPath: "/certs/client",
+						ReadOnly:  false,
 					},
 					{
 						Name:      emptydirFlag,
 						MountPath: "/run/solution",
+						ReadOnly:  false,
+					},
+					{
+						Name:      emptydirCode,
+						MountPath: codeFolder,
+						ReadOnly:  false,
 					},
 				},
 				Resources: resourceRequirements,
@@ -225,6 +241,12 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 			},
 			{
 				Name: emptydirFlag,
+				VolumeSource: corev1.VolumeSource{
+					EmptyDir: &corev1.EmptyDirVolumeSource{},
+				},
+			},
+			{
+				Name: emptydirCode,
 				VolumeSource: corev1.VolumeSource{
 					EmptyDir: &corev1.EmptyDirVolumeSource{},
 				},
