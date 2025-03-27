@@ -49,7 +49,7 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 			),
 			`unzip -d "/run/test/solution/" "/run/test/solution.zip"`,
 			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test",
-			"docker run -e HTTP_PORT -e SSH_PORT -e DOMAIN -v /run/solution:/run/solution test",
+			"docker run -e HTTP_PORT -e SSH_PORT -e DOMAIN -e SSH_SERVICE_INTERNAL_URL -v /run/solution:/run/solution test",
 			"FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]')",
 			fmt.Sprintf(
 				`curl -k -X POST -d "{\"flag\":\"$FLAG\"}" %s/solutions/%s/verify`,
@@ -105,6 +105,10 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 			{
 				Name:  "DOMAIN",
 				Value: challengeUrl,
+			},
+			{
+				Name:  "SSH_SERVICE_INTERNAL_URL",
+				Value: sshUrl(challengeUrl),
 			},
 			// 2376 for TLS; otherwise 2375
 			{
@@ -308,8 +312,9 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 			`unzip -d "/run/test/solution/" "/run/test/solution.zip"`,
 			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test",
 			fmt.Sprintf(
-				`docker run -e HTTP_PORT=8080 -e SSH_PORT=8022 -e DOMAIN="%s" -v /run/solution:/run/solution test`,
+				`docker run -e HTTP_PORT=8080 -e SSH_PORT=8022 -e DOMAIN="%s" -e SSH_SERVICE_INTERNAL_URL="%s" -v /run/solution:/run/solution test`,
 				challengeUrl,
+				sshUrl(challengeUrl),
 			),
 			fmt.Sprintf(
 				`FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]') && wget --no-check-certificate --post-data="{\"flag\":\"$FLAG\"}" "%s/solutions/%s/verify"`,
@@ -487,4 +492,9 @@ func buildContainerInit(runCommand []string) string {
 	userData := fmt.Sprintf(`sleep 30
 %s`, strings.Join(runCommand, "\n"))
 	return userData
+}
+
+func sshUrl(domain string) string {
+	parts := strings.Split(domain, ".")
+	return "ssh.challenge-" + parts[0]
 }
