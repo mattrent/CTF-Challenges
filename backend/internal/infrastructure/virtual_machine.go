@@ -494,7 +494,9 @@ func buildContainerInit(runCommand []string) string {
 	return userData
 }
 
+// ! Important to use fully qualified domain name
+// ! Only needed for VMs
 func sshUrl(domain string) string {
 	parts := strings.Split(domain, ".")
-	return "ssh.challenge-" + parts[0]
+	return "ssh.challenge-" + parts[0] + ".svc.cluster.local"
 }
