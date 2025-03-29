@@ -60,6 +60,15 @@ func GetRunningTestInstanceId(c *gin.Context, challengeId string) (string, error
 	return "", nil
 }
 
+func GetNumberChallengesRunningForUserId(c *gin.Context, userId string) (int, error) {
+	selector := namespaceLabelPlayerId + "=" + userId + "," + testLabel + "=false"
+	nsList, err := getNameSpaces(c, selector)
+	if err != nil {
+		return 0, err
+	}
+	return len(nsList.Items), nil
+}
+
 func BuildNamespace(challengeId, instanceid, playerId string, testMode bool) *corev1.Namespace {
 
 	var name string

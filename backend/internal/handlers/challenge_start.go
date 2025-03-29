@@ -35,6 +35,16 @@ func StartChallenge(c *gin.Context) {
 	userId := auth.GetCurrentUserId(c)
 	challengeId := c.Param("id")
 
+	NoChallengesForUser, err := infrastructure.GetNumberChallengesRunningForUserId(c, userId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if NoChallengesForUser >= config.Values.AllowedChallengesAtOnce && !auth.IsAdmin(c) {
+		c.JSON(http.StatusTooManyRequests, gin.H{"error": "You have reached the maximum number of challenges"})
+		return
+	}
+
 	challenge, err := storage.GetChallengeWrapper(challengeId)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"message": err.Error()})

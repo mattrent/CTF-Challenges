@@ -33,6 +33,7 @@ type Config struct {
 	ChallengeLifetimeMinutes int
 	TestLifetimeMinutes      int
 	BackendUrl               string
+	AllowedChallengesAtOnce  int
 	ChallengeDomain          string
 	VMImageUrl               string
 	ContainerImageUrl        string
