@@ -337,7 +337,7 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 				`HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s" docker compose -f /run/challenge/challenge/compose.yaml up -d`,
 				challengeUrl,
 			),
-			`nohup docker compose logs -f > /tmp/compose-logs &`,
+			`(( docker compose logs -f > /tmp/compose-logs & ) & )`,
 		}
 	}
 
