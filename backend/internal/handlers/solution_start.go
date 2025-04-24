@@ -49,14 +49,6 @@ func StartTest(c *gin.Context) {
 		return
 	}
 
-	if runningIdChallenge == "" {
-		c.JSON(http.StatusNotFound, gin.H{
-			"error":    "Challenge not started",
-			"verified": challenge.Verified,
-		})
-		return
-	}
-
 	if runningIdTest != "" {
 		c.JSON(http.StatusOK, gin.H{
 			"started":  true,

@@ -1,0 +1,88 @@
+package handlers
+
+import (
+	"deployer/internal/auth"
+	"deployer/internal/infrastructure"
+	"deployer/internal/storage"
+	"fmt"
+	"io"
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+)
+
+// @Summary Get solution logs
+// @Description Returns the logs of a solution
+// @Tags solutions
+// @Security BearerAuth
+// @Param id path string true "Challenge ID"
+// @Success 200 {string} string "Logs"
+// @Failure 401 {object} handlers.ErrorResponse
+// @Router /solutions/{id}/logs [get]
+func GetSolutionLogs(c *gin.Context) {
+	challengeId := c.Param("id")
+	userId := auth.GetCurrentUserId(c)
+
+	challenge, err := storage.GetChallenge(challengeId)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if challenge.UserId != userId && !auth.IsAdmin(c) {
+		c.JSON(http.StatusUnauthorized, gin.H{})
+		return
+	}
+
+	instanceId, err := infrastructure.GetRunningTestInstanceId(c, challenge.Id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	if instanceId == "" {
+		c.JSON(http.StatusNotFound, gin.H{"message": "Solution instance not running"})
+		return
+	}
+
+	kubeconfig := infrastructure.GetKubeConfigSingleton()
+	clientset, err := kubernetes.NewForConfig(kubeconfig)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	namespace := infrastructure.GetNamespaceNameTest(instanceId)
+	pods, err := clientset.CoreV1().Pods(namespace).List(c, metav1.ListOptions{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	kind := pods.Items[0].Labels["managed-by"]
+	var req *rest.Request
+	if kind == "vm" {
+		req = clientset.CoreV1().Pods(namespace).GetLogs(pods.Items[0].Name, &corev1.PodLogOptions{Container: "guest-console-log"})
+	} else if kind == "container" {
+		req = clientset.CoreV1().Pods(namespace).GetLogs(pods.Items[0].Name, &corev1.PodLogOptions{Container: "challenge-container"})
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Unknown Kubernetes kind: %s", kind)})
+		return
+	}
+	logReader, err := req.Stream(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	defer logReader.Close()
+	b, err := io.ReadAll(logReader)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.String(http.StatusOK, string(b))
+}

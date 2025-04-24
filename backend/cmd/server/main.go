@@ -93,6 +93,8 @@ func main() {
 
 	router.POST("/solutions/:id/stop", auth.RequireDeveloper, handlers.StopTest)
 
+	router.GET("/solutions/:id/logs", auth.RequireDeveloper, handlers.GetSolutionLogs)
+
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err := router.SetTrustedProxies(nil)

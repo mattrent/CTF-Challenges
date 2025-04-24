@@ -265,6 +265,29 @@ paths:
       summary: Download solution
       tags:
       - solutions
+  /solutions/{id}/logs:
+    get:
+      description: Returns the logs of a solution
+      parameters:
+      - description: Challenge ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: Logs
+          schema:
+            type: string
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/handlers.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get solution logs
+      tags:
+      - solutions
   /solutions/{id}/start:
     post:
       description: Starts a test for a challenge
