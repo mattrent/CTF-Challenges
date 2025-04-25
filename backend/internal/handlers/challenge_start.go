@@ -87,6 +87,9 @@ func StartChallenge(c *gin.Context) {
 }
 
 func getChallengeDomain(instanceId string) string {
+	if instanceId == "" {
+		return config.Values.ChallengeDomain
+	}
 	return instanceId[0:18] + config.Values.ChallengeDomain
 }
 
