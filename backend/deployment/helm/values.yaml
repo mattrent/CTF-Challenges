@@ -25,7 +25,7 @@ securityContext:
   allowPrivilegeEscalation: false
   capabilities:
     drop:
-    - ALL
+      - ALL
   runAsNonRoot: true
   runAsUser: 1001
 
@@ -34,14 +34,14 @@ service:
   port: 8080
 
 volumes:
-- name: deployer-pv-storage
-  persistentVolumeClaim:
-    claimName: deployer-pvclaim
+  - name: deployer-pv-storage
+    persistentVolumeClaim:
+      claimName: deployer-pvclaim
 
 volumeMounts:
-- name: deployer-pv-storage
-  mountPath: "/uploads"
-  readOnly: false
+  - name: deployer-pv-storage
+    mountPath: "/uploads"
+    readOnly: false
 
 livenessProbe:
   httpGet:
@@ -87,8 +87,8 @@ env:
   MAXVMMEMORY: "2048M"
   VMCPUS: 2
   # Minutes before challenge instances are automatically deleted
-  CHALLENGELIFETIMEMINUTES: 120
-  TESTLIFETIMEMINUTES: 120
+  CHALLENGELIFETIMEMINUTES: 20
+  TESTLIFETIMEMINUTES: 20
   # URL where VM's can download challenge files from the deployer service
   BACKENDURL: "http://deployer.ctf.svc.cluster.local:8080"
   # The domain of which subdomains are generated, example: 7651121c-b8d2-43e9-af88-c493d8ad8a75.local.lan
