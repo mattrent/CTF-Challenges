@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"deployer/internal/auth"
 	"deployer/internal/storage"
 	"net/http"
 
@@ -15,7 +16,9 @@ import (
 // @Router       /challenges [get]
 // @Security BearerAuth
 func ListChallenges(c *gin.Context) {
-	res, err := storage.ListChallenges()
+	isAdmin := auth.IsAdmin(c)
+	userid := auth.GetCurrentUserId(c)
+	res, err := storage.ListChallenges(isAdmin, userid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

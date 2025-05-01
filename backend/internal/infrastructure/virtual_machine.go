@@ -50,6 +50,7 @@ func BuildContainer(challengeId, userId, token, namespace, challengeUrl string, 
 			`unzip -d "/run/test/solution/" "/run/test/solution.zip"`,
 			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test",
 			"docker run -e HTTP_PORT -e SSH_PORT -e DOMAIN -e SSH_SERVICE_INTERNAL_URL -v /run/solution:/run/solution test",
+			"sleep 30",
 			"FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]')",
 			fmt.Sprintf(
 				`curl -k -X POST -d "{\"flag\":\"$FLAG\"}" %s/solutions/%s/verify`,
@@ -316,6 +317,7 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 				challengeUrl,
 				sshUrl(challengeUrl),
 			),
+			"sleep 30",
 			fmt.Sprintf(
 				`FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]') && wget --no-check-certificate --post-data="{\"flag\":\"$FLAG\"}" "%s/solutions/%s/verify"`,
 				config.Values.BackendUrl,

@@ -144,10 +144,22 @@ func UpdateChallengeFlagGivenChallengeFile(filePath string, challengeId string) 
 	return err
 }
 
-func ListChallenges() ([]Challenge, error) {
+func ListChallenges(isAdmin bool, userId string) ([]Challenge, error) {
 	var result []Challenge
+	var rows *sql.Rows
+	var err error
 
-	rows, err := Db.Query("SELECT id, user_id, published, ctfd_id, verified FROM challenges;")
+	if isAdmin {
+		rows, err = Db.Query(
+			"SELECT id, user_id, published, ctfd_id, verified FROM challenges;",
+		)
+	} else {
+		rows, err = Db.Query(
+			"SELECT id, user_id, published, ctfd_id, verified FROM challenges WHERE user_id = $1;",
+			userId,
+		)
+	}
+
 	if err != nil {
 		return result, err
 	}

@@ -64,7 +64,7 @@ func main() {
 
 	router.POST("/users/login", handlers.Login)
 
-	router.GET("/challenges", auth.RequireAdmin, handlers.ListChallenges)
+	router.GET("/challenges", auth.RequireDeveloper, handlers.ListChallenges)
 
 	router.POST("/challenges", auth.RequireDeveloper, handlers.AddChallenge)
 

@@ -71,6 +71,7 @@ ingress:
     cert-manager.io/issuer: "step-issuer"
     cert-manager.io/issuer-kind: "StepClusterIssuer"
     cert-manager.io/issuer-group: "certmanager.step.sm"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
   useTls: true
   tlsSecretName: "deployer-inbound-tls"
 
