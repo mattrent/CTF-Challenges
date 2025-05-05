@@ -317,14 +317,14 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 				challengeUrl,
 				sshUrl(challengeUrl),
 			),
+			`echo "sleep 3; echo "" | tee /dev/ttyS0; docker logs -f test-container | tee /dev/ttyS0" > /run/compose-logs-monitor`,
+			`sh /run/compose-logs-monitor &`,
 			"sleep 30",
 			fmt.Sprintf(
 				`FLAG=$(cat /run/solution/flag.txt | tr -d '[:space:]') && wget --no-check-certificate --post-data="{\"flag\":\"$FLAG\"}" "%s/solutions/%s/verify"`,
 				config.Values.BackendUrl,
 				challengeId,
 			),
-			`echo "sleep 3; echo "" | tee /dev/ttyS0; docker logs -f test-container | tee /dev/ttyS0" > /run/compose-logs-monitor`,
-			`sh /run/compose-logs-monitor &`,
 		}
 	} else {
 		runCommand = []string{
