@@ -310,8 +310,9 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 				challengeId,
 				token,
 			),
+			`echo "" | tee /dev/ttyS0`,
 			`unzip -d "/run/test/solution/" "/run/test/solution.zip"`,
-			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test",
+			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test &> /dev/ttyS0",
 			fmt.Sprintf(
 				`docker run --name test-container -e HTTP_PORT=8080 -e SSH_PORT=8022 -e DOMAIN="%s" -e SSH_SERVICE_INTERNAL_URL="%s" -v /run/solution:/run/solution test`,
 				challengeUrl,
