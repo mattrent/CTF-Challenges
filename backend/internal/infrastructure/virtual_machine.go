@@ -312,13 +312,13 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 			),
 			`echo "" | tee /dev/ttyS0`,
 			`unzip -d "/run/test/solution/" "/run/test/solution.zip"`,
-			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test &> /dev/ttyS0",
+			"docker build /run/test/solution/ -f /run/test/solution/Dockerfile -t test 2>&1 &> /dev/ttyS0",
 			fmt.Sprintf(
 				`docker run --name test-container -e HTTP_PORT=8080 -e SSH_PORT=8022 -e DOMAIN="%s" -e SSH_SERVICE_INTERNAL_URL="%s" -v /run/solution:/run/solution test`,
 				challengeUrl,
 				sshUrl(challengeUrl),
 			),
-			`echo "sleep 3; echo "" | tee /dev/ttyS0; docker logs -f test-container | tee /dev/ttyS0" > /run/compose-logs-monitor`,
+			`echo "sleep 3; echo "" | tee /dev/ttyS0; docker logs -f test-container 2>&1 | tee /dev/ttyS0" > /run/compose-logs-monitor`,
 			`sh /run/compose-logs-monitor &`,
 			"sleep 30",
 			fmt.Sprintf(
@@ -342,7 +342,7 @@ func BuildVm(challengeId, userId, token, namespace, challengeUrl string, testMod
 				`HTTP_PORT="8080" SSH_PORT="8022" DOMAIN="%s" docker compose -f /run/challenge/challenge/compose.yaml up -d`,
 				challengeUrl,
 			),
-			`echo "sleep 3; echo "" | tee /dev/ttyS0; docker compose -f /var/run/challenge/challenge/compose.yaml logs -f | tee /dev/ttyS0" > /run/compose-logs-monitor`,
+			`echo "sleep 3; echo "" | tee /dev/ttyS0; docker compose -f /var/run/challenge/challenge/compose.yaml logs -f 2>&1 | tee /dev/ttyS0" > /run/compose-logs-monitor`,
 			`sh /run/compose-logs-monitor &`,
 		}
 	}
